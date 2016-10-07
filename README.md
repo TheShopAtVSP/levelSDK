@@ -5,3 +5,5 @@ There are 2 screens in the app, Blink to Link, which facillitates the pairing of
 If you going to write your own app, the needed packages are: ble, model and receiver.
 
 Be sure to include the BleManager service in your AndroidManifest.xml as well.
+
+For SDK documentation see: https://docs.google.com/document/d/15pUD-JFxV4LIPJz6DFHOcJzxUQbwauO6dihMoJXmidE/edit?usp=sharing
