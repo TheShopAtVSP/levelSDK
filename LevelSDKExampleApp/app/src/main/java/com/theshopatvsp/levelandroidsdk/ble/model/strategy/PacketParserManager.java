@@ -1,5 +1,7 @@
 package com.theshopatvsp.levelandroidsdk.ble.model.strategy;
 
+import android.util.Log;
+
 import  com.theshopatvsp.levelandroidsdk.ble.model.constants.DeviceCommand;
 import  com.theshopatvsp.levelandroidsdk.ble.model.exception.DataLengthException;
 import  com.theshopatvsp.levelandroidsdk.ble.model.exception.SequenceIdException;
@@ -10,6 +12,7 @@ import  com.theshopatvsp.levelandroidsdk.ble.model.response.RecordData;
  * Created by andrco on 10/2/15.
  */
 public class PacketParserManager {
+    private static final String TAG = PacketParserManager.class.getSimpleName();
     private static RecordData record;
 
     public static DataPacket parse(int expectedPacketIdIn, byte packet[]) throws Exception {
@@ -26,6 +29,7 @@ public class PacketParserManager {
             if( record.isFinished() )
                 return record;
         } else if (command == DeviceCommand.RECORD_CONTINUE) {
+            Log.v(TAG, "continuing record");
             record = new StartOfRecord().continueRecord(record, packet);
 
             if (record.isFinished()) {

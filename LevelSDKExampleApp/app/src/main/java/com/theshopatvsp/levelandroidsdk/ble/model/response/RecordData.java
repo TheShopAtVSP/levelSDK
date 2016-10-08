@@ -1,5 +1,7 @@
 package com.theshopatvsp.levelandroidsdk.ble.model.response;
 
+import android.util.Log;
+
 import  com.theshopatvsp.levelandroidsdk.ble.helper.BitsHelper;
 import com.theshopatvsp.levelandroidsdk.ble.model.constants.ReporterType;
 import  com.theshopatvsp.levelandroidsdk.ble.model.response.TimePacket;
@@ -12,6 +14,7 @@ import java.util.Date;
  */
 public class RecordData extends TimePacket {
     public static final int HEADER_LEGTH = 8;
+    private static final String TAG = RecordData.class.getSimpleName();
 
     private int data[];
     private int currentBytes = 0;
@@ -34,6 +37,8 @@ public class RecordData extends TimePacket {
         timestamp = BitsHelper.convetTo32BitLong(packet[9], packet[8], packet[7], packet[6]) * 1000; //convert seconds to millis
         originalTimestamp = timestamp;
 
+        Log.v(TAG, "new record total = " + totalBytes);
+
         if (totalBytes > 0) {
             data = new int[totalBytes];
 
@@ -48,19 +53,21 @@ public class RecordData extends TimePacket {
     }
 
     public RecordData continueRecord(byte packet[]) {
-        for (int i = 2; i < packet.length; i++) {
-            data[currentBytes++] = packet[i];
+        for (int i = 2; i < packet.length; i+=2) {
+            data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i], packet[i + 1]);;
 
             if (isFinished()) {
                 break;
             }
         }
 
+        Log.v(TAG, "cur Bytes = " + currentBytes + " total = " + totalBytes);
+
         return this;
     }
 
     public boolean isFinished() {
-        return currentBytes == totalBytes;
+        return (currentBytes*2) == totalBytes;
     }
 
     public int[] getData() {

@@ -1048,6 +1048,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     }
 
     private void sendAck() {
+        Log.v(TAG, "sending ACK for record");
         byte[] packet = {
                 (byte) deviceId.getPacketIdOut(),
                 (byte) DeviceCommand.ACK.getCommand(),
@@ -1291,7 +1292,6 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     }
 
     private void broadcastUpdate(BleDeviceOutput output, Serializable thing) {
-        if (appOpen && output != BleDeviceOutput.BatteryReport && output != BleDeviceOutput.MotionData) {
             Log.v(TAG, "sending thing out to the app: " + thing.getClass().getSimpleName());
             switch (output) {
                 case Data:
@@ -1338,43 +1338,6 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                     break;
 
             }
-        } else {
-            Log.v(TAG, "writing thing to file: " + thing.getClass().getSimpleName());
-            String fileToUse = null;
-
-            if (thing instanceof Step) {
-                fileToUse = FileHelper.STEPS_FILE;
-            } else if (thing instanceof BatteryReport) {
-                fileToUse = FileHelper.BATTERY_FILE;
-            } else if (thing instanceof List) {
-                List things = (List) thing;
-
-                if (things != null && !things.isEmpty() && things.get(0) instanceof AccelFilt) {
-                    fileToUse = FileHelper.MOTION_DATA_FILE;
-
-                    for (AccelFilt filt : (List<AccelFilt>) thing) {
-                        try {
-                            FileHelper.writeToFile(getApplicationContext(), fileToUse, mapper.writeValueAsString(filt), true);
-                        } catch (JsonProcessingException e) {
-                            Log.e(TAG, "Json serialization error: ", e);
-                        }
-                    }
-                }
-
-                return;
-            }
-
-            if (fileToUse != null) {
-                try {
-                    FileHelper.writeToFile(getApplicationContext(), fileToUse, mapper.writeValueAsString(thing), true);
-                } catch (JsonProcessingException e) {
-                    Log.e(TAG, "Json serialization error: ", e);
-                }
-
-                String contents = FileHelper.read(getApplicationContext(), fileToUse);
-                Log.v(TAG, "contents of file is: " + contents.length());
-            }
-        }
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {

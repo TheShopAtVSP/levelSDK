@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     Log.v(TAG, "sending InitiateConnection Intent");
                     deviceClient.registerDeviceCallbacks(callbacks);
-                    deviceClient.connect(null);
+                    deviceClient.connect("30E6");
                 }
             }, 1000);
         }
