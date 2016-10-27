@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.theshopatvsp.levelandroidsdk">
+    package="com.theshopatvsp.levelandroidsdkexample">
 
     <uses-sdk android:minSdkVersion="19"
         android:targetSdkVersion="22" />
@@ -12,32 +12,32 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".LevelApplication"
+        android:name="com.theshopatvsp.levelandroidsdkexample.LevelApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name="com.theshopatvsp.levelandroidsdkexample.MainActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
 
-        <activity android:name=".DashboardActivity">
+        <activity android:name="com.theshopatvsp.levelandroidsdkexample.DashboardActivity">
         </activity>
 
         <receiver
-            android:name=".receiver.AlarmBootReceiver"
+            android:name="com.theshopatvsp.levelandroidsdk.receiver.AlarmBootReceiver"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".receiver.LevelBleAlarmReceiver"
+            android:name="com.theshopatvsp.levelandroidsdk.receiver.LevelBleAlarmReceiver"
             android:exported="true" >
             <intent-filter>
                 <action android:name="levelBleConnectionAlarm.START_ALARM" >
@@ -45,10 +45,10 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".ble.BleManager"
+        <service android:name="com.theshopatvsp.levelandroidsdk.ble.BleManager"
             android:enabled="true"
             android:exported="true"></service>
-        <service android:name=".ble.BootloaderService"
+        <service android:name="com.theshopatvsp.levelandroidsdk.ble.BootloaderService"
             android:enabled="true"
             android:exported="true"></service>
 
