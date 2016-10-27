@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">LevelAndroidSDK</string>
+    <string-array name="reporter_types">
+        <item>Steps</item>
+        <item>Accel</item>
+        <item>Gyro</item>
+    </string-array>
+    <string-array name="reporter_actions">
+        <item>Query</item>
+        <item>Enable</item>
+        <item>Disable</item>
+    </string-array>
+    <string-array name="dep_data_scale">
+        <item>ONE_TO_ONE_BIT</item>
+        <item>TEN_TO_ONE_BIT</item>
+        <item>ONE_HUNDRED_TO_ONE_BIT</item>
+        <item>PLUS_MINUS_1G_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_2G_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_4G_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_8G_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_16G_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_500_DPS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_1000_DPS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_2000_DPS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_4_GAUSS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_8_GAUSS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_12_GAUSS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_16_GAUSS_TO_DATA_SIZE</item>
+        <item>PLUS_MINUS_48_GAUSS_TO_DATA_SIZE</item>
+    </string-array>
+</resources>
