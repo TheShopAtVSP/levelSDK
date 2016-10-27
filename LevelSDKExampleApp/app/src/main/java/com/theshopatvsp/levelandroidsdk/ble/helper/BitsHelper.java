@@ -1,11 +1,17 @@
 package com.theshopatvsp.levelandroidsdk.ble.helper;
 
+import android.util.Log;
+
 /**
  * Created by andrco on 10/5/15.
  */
 public class BitsHelper {
+    private static final String TAG = BitsHelper.class.getSimpleName();
+
     public static int convertTo16BitInteger(byte msb, byte lsb) {
-        return (((int)msb & 0xFF) << 8) + ((int)lsb & 0xFF);
+        int num = (((int)msb) << 8) | ((int)lsb & 0xFF);
+        Log.v(TAG, "before: " + msb + " " + lsb + " after: " + num);
+        return num;
     }
 
     public static int convertTo12BitInteger(byte msb, byte lsb) {
