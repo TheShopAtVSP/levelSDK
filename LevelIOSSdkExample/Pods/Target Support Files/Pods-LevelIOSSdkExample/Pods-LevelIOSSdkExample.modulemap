@@ -1,0 +1,6 @@
+framework module Pods_LevelIOSSdkExample {
+  umbrella header "Pods-LevelIOSSdkExample-umbrella.h"
+
+  export *
+  module * { export * }
+}
