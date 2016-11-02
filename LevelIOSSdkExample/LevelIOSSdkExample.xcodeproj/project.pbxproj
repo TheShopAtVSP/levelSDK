@@ -7,6 +7,58 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1988CBF21DC940D300AA8A8F /* BleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBED1DC940D300AA8A8F /* BleManager.swift */; };
+		1988CBF31DC940D300AA8A8F /* BootloaderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */; };
+		1988CBF41DC940D300AA8A8F /* DeviceClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */; };
+		1988CBF51DC940D300AA8A8F /* DeviceIdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBF01DC940D300AA8A8F /* DeviceIdManager.swift */; };
+		1988CBF61DC940D300AA8A8F /* DeviceStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBF11DC940D300AA8A8F /* DeviceStateMachine.swift */; };
+		1988CBFF1DC9411700AA8A8F /* AccelFilt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBF91DC9411700AA8A8F /* AccelFilt.swift */; };
+		1988CC001DC9411700AA8A8F /* BatteryReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBFA1DC9411700AA8A8F /* BatteryReport.swift */; };
+		1988CC011DC9411700AA8A8F /* BatteryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBFB1DC9411700AA8A8F /* BatteryState.swift */; };
+		1988CC021DC9411700AA8A8F /* BleCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBFC1DC9411700AA8A8F /* BleCommand.swift */; };
+		1988CC031DC9411700AA8A8F /* BleFoundDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBFD1DC9411700AA8A8F /* BleFoundDevice.swift */; };
+		1988CC041DC9411700AA8A8F /* CodePacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBFE1DC9411700AA8A8F /* CodePacket.swift */; };
+		1988CC101DC9413D00AA8A8F /* BleCharacteristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC061DC9413D00AA8A8F /* BleCharacteristics.swift */; };
+		1988CC111DC9413D00AA8A8F /* BleServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC071DC9413D00AA8A8F /* BleServices.swift */; };
+		1988CC121DC9413D00AA8A8F /* Charity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC081DC9413D00AA8A8F /* Charity.swift */; };
+		1988CC131DC9413D00AA8A8F /* DataFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC091DC9413D00AA8A8F /* DataFields.swift */; };
+		1988CC141DC9413D00AA8A8F /* DependentDataScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0A1DC9413D00AA8A8F /* DependentDataScale.swift */; };
+		1988CC151DC9413D00AA8A8F /* DependentDataType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0B1DC9413D00AA8A8F /* DependentDataType.swift */; };
+		1988CC161DC9413D00AA8A8F /* DependentVariableDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0C1DC9413D00AA8A8F /* DependentVariableDescription.swift */; };
+		1988CC171DC9413D00AA8A8F /* DeviceCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0D1DC9413D00AA8A8F /* DeviceCommand.swift */; };
+		1988CC181DC9413D00AA8A8F /* IndependentVariableDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0E1DC9413D00AA8A8F /* IndependentVariableDescription.swift */; };
+		1988CC191DC9413D00AA8A8F /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC0F1DC9413D00AA8A8F /* StateMachine.swift */; };
+		1988CC1E1DC9415200AA8A8F /* DataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC1A1DC9415200AA8A8F /* DataPacket.swift */; };
+		1988CC1F1DC9415300AA8A8F /* DeleteBondPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC1B1DC9415200AA8A8F /* DeleteBondPacket.swift */; };
+		1988CC201DC9415300AA8A8F /* DeviceUserUuid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC1C1DC9415200AA8A8F /* DeviceUserUuid.swift */; };
+		1988CC211DC9415300AA8A8F /* Frame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC1D1DC9415200AA8A8F /* Frame.swift */; };
+		1988CC261DC9418200AA8A8F /* BitsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC231DC9418200AA8A8F /* BitsHelper.swift */; };
+		1988CC271DC9418200AA8A8F /* CalculationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC241DC9418200AA8A8F /* CalculationHelper.swift */; };
+		1988CC281DC9418200AA8A8F /* LeastSquaresExponentialFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC251DC9418200AA8A8F /* LeastSquaresExponentialFit.swift */; };
+		1988CC301DC9418F00AA8A8F /* LastLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC291DC9418F00AA8A8F /* LastLocation.swift */; };
+		1988CC311DC9418F00AA8A8F /* LevelColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2A1DC9418F00AA8A8F /* LevelColor.swift */; };
+		1988CC321DC9418F00AA8A8F /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2B1DC9418F00AA8A8F /* LevelModel.swift */; };
+		1988CC331DC9418F00AA8A8F /* LevelUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2C1DC9418F00AA8A8F /* LevelUser.swift */; };
+		1988CC341DC9418F00AA8A8F /* LockPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2D1DC9418F00AA8A8F /* LockPacket.swift */; };
+		1988CC351DC9418F00AA8A8F /* RecordData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2E1DC9418F00AA8A8F /* RecordData.swift */; };
+		1988CC361DC9418F00AA8A8F /* ReportAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC2F1DC9418F00AA8A8F /* ReportAttributes.swift */; };
+		1988CC461DC941C700AA8A8F /* CodeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC381DC941C700AA8A8F /* CodeParser.swift */; };
+		1988CC471DC941C700AA8A8F /* DataPacketFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC391DC941C700AA8A8F /* DataPacketFactory.swift */; };
+		1988CC481DC941C700AA8A8F /* DataPacketParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3A1DC941C700AA8A8F /* DataPacketParser.swift */; };
+		1988CC491DC941C700AA8A8F /* DeleteBondParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3B1DC941C700AA8A8F /* DeleteBondParser.swift */; };
+		1988CC4A1DC941C700AA8A8F /* FrameParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3C1DC941C700AA8A8F /* FrameParser.swift */; };
+		1988CC4B1DC941C700AA8A8F /* LockParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3D1DC941C700AA8A8F /* LockParser.swift */; };
+		1988CC4C1DC941C700AA8A8F /* NackParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3E1DC941C700AA8A8F /* NackParser.swift */; };
+		1988CC4D1DC941C700AA8A8F /* PacketParserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC3F1DC941C700AA8A8F /* PacketParserManager.swift */; };
+		1988CC4E1DC941C700AA8A8F /* ReportAttributesParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC401DC941C700AA8A8F /* ReportAttributesParser.swift */; };
+		1988CC4F1DC941C700AA8A8F /* ReportControlParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC411DC941C700AA8A8F /* ReportControlParser.swift */; };
+		1988CC501DC941C700AA8A8F /* StartOfRecordParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC421DC941C700AA8A8F /* StartOfRecordParser.swift */; };
+		1988CC511DC941C700AA8A8F /* TimeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC431DC941C700AA8A8F /* TimeParser.swift */; };
+		1988CC521DC941C700AA8A8F /* TransmitControlParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC441DC941C700AA8A8F /* TransmitControlParser.swift */; };
+		1988CC531DC941C700AA8A8F /* UserUuidParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC451DC941C700AA8A8F /* UserUuidParser.swift */; };
+		1988CC551DC9431700AA8A8F /* Step.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC541DC9431700AA8A8F /* Step.swift */; };
+		1988CC571DC9476C00AA8A8F /* TimePacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC561DC9476C00AA8A8F /* TimePacket.swift */; };
+		1988CC591DC949DE00AA8A8F /* TransmitControlData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CC581DC949DE00AA8A8F /* TransmitControlData.swift */; };
 		19B644801DC3CA7F00006C41 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B6447F1DC3CA7F00006C41 /* AppDelegate.swift */; };
 		19B644821DC3CA7F00006C41 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B644811DC3CA7F00006C41 /* FirstViewController.swift */; };
 		19B644841DC3CA7F00006C41 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B644831DC3CA7F00006C41 /* SecondViewController.swift */; };
@@ -15,7 +67,6 @@
 		19B6448C1DC3CA7F00006C41 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 19B6448A1DC3CA7F00006C41 /* LaunchScreen.storyboard */; };
 		19B644971DC3CA7F00006C41 /* LevelIOSSdkExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B644961DC3CA7F00006C41 /* LevelIOSSdkExampleTests.swift */; };
 		19B644A21DC3CA7F00006C41 /* LevelIOSSdkExampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B644A11DC3CA7F00006C41 /* LevelIOSSdkExampleUITests.swift */; };
-		19B644B01DC4125000006C41 /* LevelIOSSdk in Resources */ = {isa = PBXBuildFile; fileRef = 19B644AF1DC4125000006C41 /* LevelIOSSdk */; };
 		2E5704B384DF40F37CCE8D0B /* Pods_LevelIOSSdkExampleUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 995CF26298B69F71268C205E /* Pods_LevelIOSSdkExampleUITests.framework */; };
 		593A537CAFEAAD9B96F9524F /* Pods_LevelIOSSdkExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D27499A7355434E236B25B33 /* Pods_LevelIOSSdkExample.framework */; };
 		D87C56533A4230E4CB8F2234 /* Pods_LevelIOSSdkExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDC67E381983FD7FE8BB50D1 /* Pods_LevelIOSSdkExampleTests.framework */; };
@@ -40,6 +91,58 @@
 
 /* Begin PBXFileReference section */
 		17363981EBAAADC917E988FE /* Pods-LevelIOSSdkExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LevelIOSSdkExampleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-LevelIOSSdkExampleTests/Pods-LevelIOSSdkExampleTests.release.xcconfig"; sourceTree = "<group>"; };
+		1988CBED1DC940D300AA8A8F /* BleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleManager.swift; path = LevelIOSSdk/BleManager.swift; sourceTree = "<group>"; };
+		1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootloaderManager.swift; path = LevelIOSSdk/BootloaderManager.swift; sourceTree = "<group>"; };
+		1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceClient.swift; path = LevelIOSSdk/DeviceClient.swift; sourceTree = "<group>"; };
+		1988CBF01DC940D300AA8A8F /* DeviceIdManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceIdManager.swift; path = LevelIOSSdk/DeviceIdManager.swift; sourceTree = "<group>"; };
+		1988CBF11DC940D300AA8A8F /* DeviceStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceStateMachine.swift; path = LevelIOSSdk/DeviceStateMachine.swift; sourceTree = "<group>"; };
+		1988CBF91DC9411700AA8A8F /* AccelFilt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccelFilt.swift; path = LevelIOSSdk/model/AccelFilt.swift; sourceTree = "<group>"; };
+		1988CBFA1DC9411700AA8A8F /* BatteryReport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BatteryReport.swift; path = LevelIOSSdk/model/BatteryReport.swift; sourceTree = "<group>"; };
+		1988CBFB1DC9411700AA8A8F /* BatteryState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BatteryState.swift; path = LevelIOSSdk/model/BatteryState.swift; sourceTree = "<group>"; };
+		1988CBFC1DC9411700AA8A8F /* BleCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleCommand.swift; path = LevelIOSSdk/model/BleCommand.swift; sourceTree = "<group>"; };
+		1988CBFD1DC9411700AA8A8F /* BleFoundDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleFoundDevice.swift; path = LevelIOSSdk/model/BleFoundDevice.swift; sourceTree = "<group>"; };
+		1988CBFE1DC9411700AA8A8F /* CodePacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CodePacket.swift; path = LevelIOSSdk/model/CodePacket.swift; sourceTree = "<group>"; };
+		1988CC061DC9413D00AA8A8F /* BleCharacteristics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleCharacteristics.swift; path = LevelIOSSdk/model/constants/BleCharacteristics.swift; sourceTree = "<group>"; };
+		1988CC071DC9413D00AA8A8F /* BleServices.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleServices.swift; path = LevelIOSSdk/model/constants/BleServices.swift; sourceTree = "<group>"; };
+		1988CC081DC9413D00AA8A8F /* Charity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Charity.swift; path = LevelIOSSdk/model/constants/Charity.swift; sourceTree = "<group>"; };
+		1988CC091DC9413D00AA8A8F /* DataFields.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DataFields.swift; path = LevelIOSSdk/model/constants/DataFields.swift; sourceTree = "<group>"; };
+		1988CC0A1DC9413D00AA8A8F /* DependentDataScale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DependentDataScale.swift; path = LevelIOSSdk/model/constants/DependentDataScale.swift; sourceTree = "<group>"; };
+		1988CC0B1DC9413D00AA8A8F /* DependentDataType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DependentDataType.swift; path = LevelIOSSdk/model/constants/DependentDataType.swift; sourceTree = "<group>"; };
+		1988CC0C1DC9413D00AA8A8F /* DependentVariableDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DependentVariableDescription.swift; path = LevelIOSSdk/model/constants/DependentVariableDescription.swift; sourceTree = "<group>"; };
+		1988CC0D1DC9413D00AA8A8F /* DeviceCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceCommand.swift; path = LevelIOSSdk/model/constants/DeviceCommand.swift; sourceTree = "<group>"; };
+		1988CC0E1DC9413D00AA8A8F /* IndependentVariableDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IndependentVariableDescription.swift; path = LevelIOSSdk/model/constants/IndependentVariableDescription.swift; sourceTree = "<group>"; };
+		1988CC0F1DC9413D00AA8A8F /* StateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StateMachine.swift; path = LevelIOSSdk/model/constants/StateMachine.swift; sourceTree = "<group>"; };
+		1988CC1A1DC9415200AA8A8F /* DataPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DataPacket.swift; path = LevelIOSSdk/model/DataPacket.swift; sourceTree = "<group>"; };
+		1988CC1B1DC9415200AA8A8F /* DeleteBondPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeleteBondPacket.swift; path = LevelIOSSdk/model/DeleteBondPacket.swift; sourceTree = "<group>"; };
+		1988CC1C1DC9415200AA8A8F /* DeviceUserUuid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceUserUuid.swift; path = LevelIOSSdk/model/DeviceUserUuid.swift; sourceTree = "<group>"; };
+		1988CC1D1DC9415200AA8A8F /* Frame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Frame.swift; path = LevelIOSSdk/model/Frame.swift; sourceTree = "<group>"; };
+		1988CC231DC9418200AA8A8F /* BitsHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BitsHelper.swift; path = LevelIOSSdk/model/helper/BitsHelper.swift; sourceTree = "<group>"; };
+		1988CC241DC9418200AA8A8F /* CalculationHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CalculationHelper.swift; path = LevelIOSSdk/model/helper/CalculationHelper.swift; sourceTree = "<group>"; };
+		1988CC251DC9418200AA8A8F /* LeastSquaresExponentialFit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LeastSquaresExponentialFit.swift; path = LevelIOSSdk/model/helper/LeastSquaresExponentialFit.swift; sourceTree = "<group>"; };
+		1988CC291DC9418F00AA8A8F /* LastLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LastLocation.swift; path = LevelIOSSdk/model/LastLocation.swift; sourceTree = "<group>"; };
+		1988CC2A1DC9418F00AA8A8F /* LevelColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LevelColor.swift; path = LevelIOSSdk/model/LevelColor.swift; sourceTree = "<group>"; };
+		1988CC2B1DC9418F00AA8A8F /* LevelModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LevelModel.swift; path = LevelIOSSdk/model/LevelModel.swift; sourceTree = "<group>"; };
+		1988CC2C1DC9418F00AA8A8F /* LevelUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LevelUser.swift; path = LevelIOSSdk/model/LevelUser.swift; sourceTree = "<group>"; };
+		1988CC2D1DC9418F00AA8A8F /* LockPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LockPacket.swift; path = LevelIOSSdk/model/LockPacket.swift; sourceTree = "<group>"; };
+		1988CC2E1DC9418F00AA8A8F /* RecordData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecordData.swift; path = LevelIOSSdk/model/RecordData.swift; sourceTree = "<group>"; };
+		1988CC2F1DC9418F00AA8A8F /* ReportAttributes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReportAttributes.swift; path = LevelIOSSdk/model/ReportAttributes.swift; sourceTree = "<group>"; };
+		1988CC381DC941C700AA8A8F /* CodeParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CodeParser.swift; path = LevelIOSSdk/model/strategy/CodeParser.swift; sourceTree = "<group>"; };
+		1988CC391DC941C700AA8A8F /* DataPacketFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DataPacketFactory.swift; path = LevelIOSSdk/model/strategy/DataPacketFactory.swift; sourceTree = "<group>"; };
+		1988CC3A1DC941C700AA8A8F /* DataPacketParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DataPacketParser.swift; path = LevelIOSSdk/model/strategy/DataPacketParser.swift; sourceTree = "<group>"; };
+		1988CC3B1DC941C700AA8A8F /* DeleteBondParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeleteBondParser.swift; path = LevelIOSSdk/model/strategy/DeleteBondParser.swift; sourceTree = "<group>"; };
+		1988CC3C1DC941C700AA8A8F /* FrameParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FrameParser.swift; path = LevelIOSSdk/model/strategy/FrameParser.swift; sourceTree = "<group>"; };
+		1988CC3D1DC941C700AA8A8F /* LockParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LockParser.swift; path = LevelIOSSdk/model/strategy/LockParser.swift; sourceTree = "<group>"; };
+		1988CC3E1DC941C700AA8A8F /* NackParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NackParser.swift; path = LevelIOSSdk/model/strategy/NackParser.swift; sourceTree = "<group>"; };
+		1988CC3F1DC941C700AA8A8F /* PacketParserManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PacketParserManager.swift; path = LevelIOSSdk/model/strategy/PacketParserManager.swift; sourceTree = "<group>"; };
+		1988CC401DC941C700AA8A8F /* ReportAttributesParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReportAttributesParser.swift; path = LevelIOSSdk/model/strategy/ReportAttributesParser.swift; sourceTree = "<group>"; };
+		1988CC411DC941C700AA8A8F /* ReportControlParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReportControlParser.swift; path = LevelIOSSdk/model/strategy/ReportControlParser.swift; sourceTree = "<group>"; };
+		1988CC421DC941C700AA8A8F /* StartOfRecordParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StartOfRecordParser.swift; path = LevelIOSSdk/model/strategy/StartOfRecordParser.swift; sourceTree = "<group>"; };
+		1988CC431DC941C700AA8A8F /* TimeParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeParser.swift; path = LevelIOSSdk/model/strategy/TimeParser.swift; sourceTree = "<group>"; };
+		1988CC441DC941C700AA8A8F /* TransmitControlParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransmitControlParser.swift; path = LevelIOSSdk/model/strategy/TransmitControlParser.swift; sourceTree = "<group>"; };
+		1988CC451DC941C700AA8A8F /* UserUuidParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UserUuidParser.swift; path = LevelIOSSdk/model/strategy/UserUuidParser.swift; sourceTree = "<group>"; };
+		1988CC541DC9431700AA8A8F /* Step.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Step.swift; path = LevelIOSSdk/model/Step.swift; sourceTree = "<group>"; };
+		1988CC561DC9476C00AA8A8F /* TimePacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimePacket.swift; path = LevelIOSSdk/model/TimePacket.swift; sourceTree = "<group>"; };
+		1988CC581DC949DE00AA8A8F /* TransmitControlData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransmitControlData.swift; path = LevelIOSSdk/model/TransmitControlData.swift; sourceTree = "<group>"; };
 		19B6447C1DC3CA7F00006C41 /* LevelIOSSdkExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LevelIOSSdkExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19B6447F1DC3CA7F00006C41 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		19B644811DC3CA7F00006C41 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
@@ -54,7 +157,6 @@
 		19B6449D1DC3CA7F00006C41 /* LevelIOSSdkExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LevelIOSSdkExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		19B644A11DC3CA7F00006C41 /* LevelIOSSdkExampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelIOSSdkExampleUITests.swift; sourceTree = "<group>"; };
 		19B644A31DC3CA7F00006C41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		19B644AF1DC4125000006C41 /* LevelIOSSdk */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LevelIOSSdk; sourceTree = "<group>"; };
 		249F273E31BAF9DB44BA4C81 /* Pods-LevelIOSSdkExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LevelIOSSdkExampleTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-LevelIOSSdkExampleTests/Pods-LevelIOSSdkExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3FE6874F442E6FD1DCC8959A /* Pods-LevelIOSSdkExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LevelIOSSdkExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-LevelIOSSdkExample/Pods-LevelIOSSdkExample.release.xcconfig"; sourceTree = "<group>"; };
 		995CF26298B69F71268C205E /* Pods_LevelIOSSdkExampleUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LevelIOSSdkExampleUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +195,97 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1988CBF71DC940E700AA8A8F /* LevelIOSSdk */ = {
+			isa = PBXGroup;
+			children = (
+				1988CBF81DC9410900AA8A8F /* model */,
+				1988CBED1DC940D300AA8A8F /* BleManager.swift */,
+				1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */,
+				1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */,
+				1988CBF01DC940D300AA8A8F /* DeviceIdManager.swift */,
+				1988CBF11DC940D300AA8A8F /* DeviceStateMachine.swift */,
+			);
+			name = LevelIOSSdk;
+			sourceTree = "<group>";
+		};
+		1988CBF81DC9410900AA8A8F /* model */ = {
+			isa = PBXGroup;
+			children = (
+				1988CC221DC9416200AA8A8F /* helper */,
+				1988CC051DC9412800AA8A8F /* constants */,
+				1988CC371DC9419900AA8A8F /* strategy */,
+				1988CBF91DC9411700AA8A8F /* AccelFilt.swift */,
+				1988CBFA1DC9411700AA8A8F /* BatteryReport.swift */,
+				1988CBFB1DC9411700AA8A8F /* BatteryState.swift */,
+				1988CBFC1DC9411700AA8A8F /* BleCommand.swift */,
+				1988CBFD1DC9411700AA8A8F /* BleFoundDevice.swift */,
+				1988CBFE1DC9411700AA8A8F /* CodePacket.swift */,
+				1988CC1A1DC9415200AA8A8F /* DataPacket.swift */,
+				1988CC1B1DC9415200AA8A8F /* DeleteBondPacket.swift */,
+				1988CC1C1DC9415200AA8A8F /* DeviceUserUuid.swift */,
+				1988CC1D1DC9415200AA8A8F /* Frame.swift */,
+				1988CC291DC9418F00AA8A8F /* LastLocation.swift */,
+				1988CC2A1DC9418F00AA8A8F /* LevelColor.swift */,
+				1988CC2B1DC9418F00AA8A8F /* LevelModel.swift */,
+				1988CC2C1DC9418F00AA8A8F /* LevelUser.swift */,
+				1988CC2D1DC9418F00AA8A8F /* LockPacket.swift */,
+				1988CC2E1DC9418F00AA8A8F /* RecordData.swift */,
+				1988CC2F1DC9418F00AA8A8F /* ReportAttributes.swift */,
+				1988CC541DC9431700AA8A8F /* Step.swift */,
+				1988CC561DC9476C00AA8A8F /* TimePacket.swift */,
+				1988CC581DC949DE00AA8A8F /* TransmitControlData.swift */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		1988CC051DC9412800AA8A8F /* constants */ = {
+			isa = PBXGroup;
+			children = (
+				1988CC061DC9413D00AA8A8F /* BleCharacteristics.swift */,
+				1988CC071DC9413D00AA8A8F /* BleServices.swift */,
+				1988CC081DC9413D00AA8A8F /* Charity.swift */,
+				1988CC091DC9413D00AA8A8F /* DataFields.swift */,
+				1988CC0A1DC9413D00AA8A8F /* DependentDataScale.swift */,
+				1988CC0B1DC9413D00AA8A8F /* DependentDataType.swift */,
+				1988CC0C1DC9413D00AA8A8F /* DependentVariableDescription.swift */,
+				1988CC0D1DC9413D00AA8A8F /* DeviceCommand.swift */,
+				1988CC0E1DC9413D00AA8A8F /* IndependentVariableDescription.swift */,
+				1988CC0F1DC9413D00AA8A8F /* StateMachine.swift */,
+			);
+			name = constants;
+			sourceTree = "<group>";
+		};
+		1988CC221DC9416200AA8A8F /* helper */ = {
+			isa = PBXGroup;
+			children = (
+				1988CC231DC9418200AA8A8F /* BitsHelper.swift */,
+				1988CC241DC9418200AA8A8F /* CalculationHelper.swift */,
+				1988CC251DC9418200AA8A8F /* LeastSquaresExponentialFit.swift */,
+			);
+			name = helper;
+			sourceTree = "<group>";
+		};
+		1988CC371DC9419900AA8A8F /* strategy */ = {
+			isa = PBXGroup;
+			children = (
+				1988CC381DC941C700AA8A8F /* CodeParser.swift */,
+				1988CC391DC941C700AA8A8F /* DataPacketFactory.swift */,
+				1988CC3A1DC941C700AA8A8F /* DataPacketParser.swift */,
+				1988CC3B1DC941C700AA8A8F /* DeleteBondParser.swift */,
+				1988CC3C1DC941C700AA8A8F /* FrameParser.swift */,
+				1988CC3D1DC941C700AA8A8F /* LockParser.swift */,
+				1988CC3E1DC941C700AA8A8F /* NackParser.swift */,
+				1988CC3F1DC941C700AA8A8F /* PacketParserManager.swift */,
+				1988CC401DC941C700AA8A8F /* ReportAttributesParser.swift */,
+				1988CC411DC941C700AA8A8F /* ReportControlParser.swift */,
+				1988CC421DC941C700AA8A8F /* StartOfRecordParser.swift */,
+				1988CC431DC941C700AA8A8F /* TimeParser.swift */,
+				1988CC441DC941C700AA8A8F /* TransmitControlParser.swift */,
+				1988CC451DC941C700AA8A8F /* UserUuidParser.swift */,
+			);
+			name = strategy;
+			sourceTree = "<group>";
+		};
 		19B644731DC3CA7F00006C41 = {
 			isa = PBXGroup;
 			children = (
@@ -118,7 +311,7 @@
 		19B6447E1DC3CA7F00006C41 /* LevelIOSSdkExample */ = {
 			isa = PBXGroup;
 			children = (
-				19B644AF1DC4125000006C41 /* LevelIOSSdk */,
+				1988CBF71DC940E700AA8A8F /* LevelIOSSdk */,
 				19B6447F1DC3CA7F00006C41 /* AppDelegate.swift */,
 				19B644811DC3CA7F00006C41 /* FirstViewController.swift */,
 				19B644831DC3CA7F00006C41 /* SecondViewController.swift */,
@@ -293,7 +486,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				19B644B01DC4125000006C41 /* LevelIOSSdk in Resources */,
 				19B6448C1DC3CA7F00006C41 /* LaunchScreen.storyboard in Resources */,
 				19B644891DC3CA7F00006C41 /* Assets.xcassets in Resources */,
 				19B644871DC3CA7F00006C41 /* Main.storyboard in Resources */,
@@ -374,7 +566,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run \'pod install\' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		715F0C638F7CA12238BFBDA8 /* [CP] Check Pods Manifest.lock */ = {
@@ -389,7 +581,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run \'pod install\' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		8D69D84E1CABACA85E892A8F /* [CP] Embed Pods Frameworks */ = {
@@ -434,7 +626,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run \'pod install\' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		EB8BB3BEFC7CEAE03EF4C0F7 /* [CP] Embed Pods Frameworks */ = {
@@ -459,9 +651,61 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1988CC351DC9418F00AA8A8F /* RecordData.swift in Sources */,
+				1988CC341DC9418F00AA8A8F /* LockPacket.swift in Sources */,
+				1988CBF41DC940D300AA8A8F /* DeviceClient.swift in Sources */,
+				1988CC511DC941C700AA8A8F /* TimeParser.swift in Sources */,
+				1988CBF61DC940D300AA8A8F /* DeviceStateMachine.swift in Sources */,
+				1988CC031DC9411700AA8A8F /* BleFoundDevice.swift in Sources */,
+				1988CC531DC941C700AA8A8F /* UserUuidParser.swift in Sources */,
+				1988CC171DC9413D00AA8A8F /* DeviceCommand.swift in Sources */,
+				1988CC111DC9413D00AA8A8F /* BleServices.swift in Sources */,
+				1988CBFF1DC9411700AA8A8F /* AccelFilt.swift in Sources */,
+				1988CC101DC9413D00AA8A8F /* BleCharacteristics.swift in Sources */,
+				1988CC011DC9411700AA8A8F /* BatteryState.swift in Sources */,
+				1988CC321DC9418F00AA8A8F /* LevelModel.swift in Sources */,
 				19B644841DC3CA7F00006C41 /* SecondViewController.swift in Sources */,
+				1988CC471DC941C700AA8A8F /* DataPacketFactory.swift in Sources */,
+				1988CC021DC9411700AA8A8F /* BleCommand.swift in Sources */,
+				1988CC151DC9413D00AA8A8F /* DependentDataType.swift in Sources */,
+				1988CC4C1DC941C700AA8A8F /* NackParser.swift in Sources */,
+				1988CC571DC9476C00AA8A8F /* TimePacket.swift in Sources */,
+				1988CC361DC9418F00AA8A8F /* ReportAttributes.swift in Sources */,
+				1988CC311DC9418F00AA8A8F /* LevelColor.swift in Sources */,
+				1988CBF31DC940D300AA8A8F /* BootloaderManager.swift in Sources */,
+				1988CC131DC9413D00AA8A8F /* DataFields.swift in Sources */,
+				1988CC161DC9413D00AA8A8F /* DependentVariableDescription.swift in Sources */,
+				1988CC041DC9411700AA8A8F /* CodePacket.swift in Sources */,
+				1988CC4E1DC941C700AA8A8F /* ReportAttributesParser.swift in Sources */,
+				1988CBF21DC940D300AA8A8F /* BleManager.swift in Sources */,
+				1988CC481DC941C700AA8A8F /* DataPacketParser.swift in Sources */,
+				1988CC181DC9413D00AA8A8F /* IndependentVariableDescription.swift in Sources */,
 				19B644801DC3CA7F00006C41 /* AppDelegate.swift in Sources */,
+				1988CC201DC9415300AA8A8F /* DeviceUserUuid.swift in Sources */,
+				1988CC591DC949DE00AA8A8F /* TransmitControlData.swift in Sources */,
 				19B644821DC3CA7F00006C41 /* FirstViewController.swift in Sources */,
+				1988CC1F1DC9415300AA8A8F /* DeleteBondPacket.swift in Sources */,
+				1988CC191DC9413D00AA8A8F /* StateMachine.swift in Sources */,
+				1988CC461DC941C700AA8A8F /* CodeParser.swift in Sources */,
+				1988CC491DC941C700AA8A8F /* DeleteBondParser.swift in Sources */,
+				1988CC551DC9431700AA8A8F /* Step.swift in Sources */,
+				1988CC521DC941C700AA8A8F /* TransmitControlParser.swift in Sources */,
+				1988CC121DC9413D00AA8A8F /* Charity.swift in Sources */,
+				1988CBF51DC940D300AA8A8F /* DeviceIdManager.swift in Sources */,
+				1988CC001DC9411700AA8A8F /* BatteryReport.swift in Sources */,
+				1988CC331DC9418F00AA8A8F /* LevelUser.swift in Sources */,
+				1988CC281DC9418200AA8A8F /* LeastSquaresExponentialFit.swift in Sources */,
+				1988CC301DC9418F00AA8A8F /* LastLocation.swift in Sources */,
+				1988CC4B1DC941C700AA8A8F /* LockParser.swift in Sources */,
+				1988CC211DC9415300AA8A8F /* Frame.swift in Sources */,
+				1988CC4A1DC941C700AA8A8F /* FrameParser.swift in Sources */,
+				1988CC501DC941C700AA8A8F /* StartOfRecordParser.swift in Sources */,
+				1988CC261DC9418200AA8A8F /* BitsHelper.swift in Sources */,
+				1988CC141DC9413D00AA8A8F /* DependentDataScale.swift in Sources */,
+				1988CC1E1DC9415200AA8A8F /* DataPacket.swift in Sources */,
+				1988CC4D1DC941C700AA8A8F /* PacketParserManager.swift in Sources */,
+				1988CC4F1DC941C700AA8A8F /* ReportControlParser.swift in Sources */,
+				1988CC271DC9418200AA8A8F /* CalculationHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -714,6 +958,7 @@
 				19B644A81DC3CA7F00006C41 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		19B644A91DC3CA7F00006C41 /* Build configuration list for PBXNativeTarget "LevelIOSSdkExampleTests" */ = {
 			isa = XCConfigurationList;
@@ -722,6 +967,7 @@
 				19B644AB1DC3CA7F00006C41 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		19B644AC1DC3CA7F00006C41 /* Build configuration list for PBXNativeTarget "LevelIOSSdkExampleUITests" */ = {
 			isa = XCConfigurationList;
@@ -730,6 +976,7 @@
 				19B644AE1DC3CA7F00006C41 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

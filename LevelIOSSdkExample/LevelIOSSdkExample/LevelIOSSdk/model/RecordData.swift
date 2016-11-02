@@ -17,9 +17,9 @@ class RecordData: TimePacket {
     var originalTimestamp: Double = 0
     
     init(bytes: [UInt8]) {
-        self.totalBytes = BitsHelper.convertTo12BitInt([UInt8](bytes[4...5])) - HEADER_LENGTH
+        self.totalBytes = BitsHelper.convertTo12BitInt(bytes: [UInt8](bytes[4...5])) - HEADER_LENGTH
         //debugPrint("RecordData - \(totalBytes)")
-        self.data = [UInt8](count: self.totalBytes, repeatedValue: 0)
+        self.data = [UInt8](repeatedValue: 0, count: self.totalBytes)
         
         super.init()
         

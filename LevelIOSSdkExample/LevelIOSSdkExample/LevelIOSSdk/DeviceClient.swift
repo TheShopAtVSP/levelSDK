@@ -45,11 +45,11 @@ class DeviceClient: NSObject {
 
     func registerDeviceCallbacks(callbacks: DeviceObserverCallbacks) {
         self.callbacks = callbacks;
-        bleManager.registerDeviceCallbacks(clientId, callbacks: callbacks);
+        bleManager.registerDeviceCallbacks(clientId: clientId, callbacks: callbacks);
     }
 
     func unregisterDeviceCallbacks() {
-        bleManager.unregisterDeviceCallbacks(clientId)
+        bleManager.unregisterDeviceCallbacks(clientId: clientId)
     }
     
     func isConnected() -> Bool {
@@ -58,12 +58,12 @@ class DeviceClient: NSObject {
 
     func connect(frameId: String) {
         debugPrint("connect \(frameId) \(self.bleManager)")
-        self.bleManager.connect(frameId)
+        self.bleManager.connect(frameId: frameId)
     }
 
     func sendLedCode(code: Int) {
         debugPrint("ble manager is\(self.bleManager)")
-        self.bleManager.sendLedCode(code)
+        self.bleManager.sendLedCode(code: code)
     }
     
     func deviceLightsNotOn() {
@@ -76,7 +76,7 @@ class DeviceClient: NSObject {
 
     func setUser(user: LevelUser) {
         debugPrint("deviceClient setUser")
-        self.bleManager.setUser(user)
+        self.bleManager.setUser(user: user)
     }
 
     func getFirmwareVersion() {
@@ -105,6 +105,6 @@ class DeviceClient: NSObject {
 
     //TODO: what the fuck is a file in swift?
     func startBootloader(firmwareFile: NSURL, delegate: BootloaderDelegate) {
-        self.bleManager.startBootloader(firmwareFile, delegate: delegate)
+        self.bleManager.startBootloader(firmwareFile: firmwareFile, delegate: delegate)
     }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreBluetooth
-//import iOSDFULibrary
+import iOSDFULibrary
 
 /**
  Holds our various service UUIDs for the level device so we can scan for the right thing.

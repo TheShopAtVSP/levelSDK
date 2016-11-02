@@ -29,11 +29,11 @@ enum DeviceLifecycle: String {
     func getPacket() -> [UInt8] {
         switch self {
         case .SetTime:
-            return BitsHelper.convertTo4Bytes(NSDate().timeIntervalSince1970)
-        case .DisableReporters, QueryReporter0:
+            return BitsHelper.convertTo4Bytes(time: NSDate().timeIntervalSince1970)
+        case .DisableReporters, .QueryReporter0:
             let bytes: [UInt8] = [0]
             return bytes
-        case .RetrieveData, QueryReporter1, .EnsureTransmitControlOn:
+        case .RetrieveData, .QueryReporter1, .EnsureTransmitControlOn:
             let bytes: [UInt8] = [1]
             return bytes
         case .EnableReporters:
@@ -123,29 +123,29 @@ class DeviceStateMachine {
     init() {
         stateMachine = StateMachine<DeviceLifecycle, DeviceTransition>(state: .QueryLock)
         
-        stateMachine.addTransition(.NeedLedCode, from: .QueryLock, to: .SendLedCode1)
-        stateMachine.addTransition(.GotLock, from: .QueryLock, to: .QueryTime)
-        stateMachine.addTransition(.GotTime, from: .QueryTime, to: .SetTime)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode1, to: .SendLedCode2)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode2, to: .SendLedCode3)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode3, to: .SendLedCode4)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode4, to: .QueryTime)
-        stateMachine.addTransition(.Disconnected, from: .SendLedCode4, to: .QueryLock)
-        stateMachine.addTransition(.TimeWasSet, from: .SetTime, to: .QueryReportControl)
-        stateMachine.addTransition(.GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
-        stateMachine.addTransition(.GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
-        stateMachine.addTransition(.GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
-        stateMachine.addTransition(.GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
-        stateMachine.addTransition(.ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
-        stateMachine.addTransition(.GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
-        stateMachine.addTransition(.TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
-        stateMachine.addTransition(.GotData, from: .RetrievingData, to: .SetupReporter0)
-        stateMachine.addTransition(.Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
-        stateMachine.addTransition(.Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
-        stateMachine.addTransition(.Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
-        stateMachine.addTransition(.ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
-        stateMachine.addTransition(.TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
-        stateMachine.addTransition(.Disconnected, from: .Done, to: .QueryTime)
+        stateMachine.addTransition(transition: .NeedLedCode, from: .QueryLock, to: .SendLedCode1)
+        stateMachine.addTransition(transition: .GotLock, from: .QueryLock, to: .QueryTime)
+        stateMachine.addTransition(transition: .GotTime, from: .QueryTime, to: .SetTime)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode1, to: .SendLedCode2)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode2, to: .SendLedCode3)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode3, to: .SendLedCode4)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode4, to: .QueryTime)
+        stateMachine.addTransition(transition: .Disconnected, from: .SendLedCode4, to: .QueryLock)
+        stateMachine.addTransition(transition: .TimeWasSet, from: .SetTime, to: .QueryReportControl)
+        stateMachine.addTransition(transition: .GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
+        stateMachine.addTransition(transition: .GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
+        stateMachine.addTransition(transition: .GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
+        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
+        stateMachine.addTransition(transition: .ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
+        stateMachine.addTransition(transition: .GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
+        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
+        stateMachine.addTransition(transition: .GotData, from: .RetrievingData, to: .SetupReporter0)
+        stateMachine.addTransition(transition: .Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
+        stateMachine.addTransition(transition: .Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
+        stateMachine.addTransition(transition: .Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
+        stateMachine.addTransition(transition: .ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
+        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
+        stateMachine.addTransition(transition: .Disconnected, from: .Done, to: .QueryTime)
     }
     
     func processResult(data: DataPacket) {
@@ -157,10 +157,10 @@ class DeviceStateMachine {
             debugPrint("QueryLock is what is going on \(lock.lock)")
             
             if lock.lock == 0 {
-                stateMachine.advance(DeviceTransition.NeedLedCode)
+                stateMachine.advance(transition: DeviceTransition.NeedLedCode)
                 ledCodeNeeded = true
             } else {
-                stateMachine.advance(DeviceTransition.GotLock)
+                stateMachine.advance(transition: DeviceTransition.GotLock)
             }
             
             debugPrint("state on exit of QueryLock is \(stateMachine.state)")
@@ -168,9 +168,9 @@ class DeviceStateMachine {
             return
         }
         
-        if stateMachine.state.rawValue.lowercaseString.hasPrefix("sendledcode") {
+        if stateMachine.state.rawValue.lowercased().hasPrefix("sendledcode") {
             debugPrint("led code received, moving on")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
             return
         }
         
@@ -248,47 +248,47 @@ class DeviceStateMachine {
             transmitControlOn = true
         }
         
-        stateMachine.advance(stateMachine.state.getTransition())
+        stateMachine.advance(transition: stateMachine.state.getTransition())
         
         if stateMachine.state == DeviceLifecycle.SetTime && timeIsCorrect {
             debugPrint("time is correct next state please")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.DisableReporters && ((reporter0Right && reporter1Right && reporter2Right) || data.reportControl == 0) {
             debugPrint("reporters are right or already disabled, next!")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.RetrieveData && totalRecordsToDownload == 0 {
             debugPrint("no data to download next!")
-            stateMachine.advance(stateMachine.state.getTransition())
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter0 && reporter0Right {
             debugPrint("no need to setup reporter 0")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter1 && reporter1Right {
             debugPrint("no need to setup reporter 1")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter2 && reporter2Right {
             debugPrint("no need to setup reporter 2")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.EnableReporters && reporter0On && reporter1On && reporter2On {
             debugPrint("reporters are all enabled next")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.EnsureTransmitControlOn && transmitControlOn {
             debugPrint("trasmit control is already on! next")
-            stateMachine.advance(stateMachine.state.getTransition())
+            stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.DisableReporters {
@@ -302,34 +302,34 @@ class DeviceStateMachine {
     }
     
     func disconnected() {
-        stateMachine.advance(DeviceTransition.Disconnected)
+        stateMachine.advance(transition: DeviceTransition.Disconnected)
     }
     
     func reset() {
         stateMachine = StateMachine<DeviceLifecycle, DeviceTransition>(state: .QueryLock)
-        stateMachine.addTransition(.NeedLedCode, from: .QueryLock, to: .SendLedCode1)
-        stateMachine.addTransition(.GotLock, from: .QueryLock, to: .QueryTime)
-        stateMachine.addTransition(.GotTime, from: .QueryTime, to: .SetTime)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode1, to: .SendLedCode2)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode2, to: .SendLedCode3)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode3, to: .SendLedCode4)
-        stateMachine.addTransition(.CodeWasReceived, from: .SendLedCode4, to: .QueryTime)
-        stateMachine.addTransition(.Disconnected, from: .SendLedCode4, to: .QueryLock)
-        stateMachine.addTransition(.TimeWasSet, from: .SetTime, to: .QueryReportControl)
-        stateMachine.addTransition(.GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
-        stateMachine.addTransition(.GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
-        stateMachine.addTransition(.GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
-        stateMachine.addTransition(.GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
-        stateMachine.addTransition(.ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
-        stateMachine.addTransition(.GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
-        stateMachine.addTransition(.TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
-        stateMachine.addTransition(.GotData, from: .RetrievingData, to: .SetupReporter0)
-        stateMachine.addTransition(.Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
-        stateMachine.addTransition(.Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
-        stateMachine.addTransition(.Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
-        stateMachine.addTransition(.ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
-        stateMachine.addTransition(.TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
-        stateMachine.addTransition(.Disconnected, from: .Done, to: .QueryTime)
+        stateMachine.addTransition(transition: .NeedLedCode, from: .QueryLock, to: .SendLedCode1)
+        stateMachine.addTransition(transition: .GotLock, from: .QueryLock, to: .QueryTime)
+        stateMachine.addTransition(transition: .GotTime, from: .QueryTime, to: .SetTime)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode1, to: .SendLedCode2)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode2, to: .SendLedCode3)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode3, to: .SendLedCode4)
+        stateMachine.addTransition(transition: .CodeWasReceived, from: .SendLedCode4, to: .QueryTime)
+        stateMachine.addTransition(transition: .Disconnected, from: .SendLedCode4, to: .QueryLock)
+        stateMachine.addTransition(transition: .TimeWasSet, from: .SetTime, to: .QueryReportControl)
+        stateMachine.addTransition(transition: .GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
+        stateMachine.addTransition(transition: .GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
+        stateMachine.addTransition(transition: .GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
+        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
+        stateMachine.addTransition(transition: .ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
+        stateMachine.addTransition(transition: .GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
+        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
+        stateMachine.addTransition(transition: .GotData, from: .RetrievingData, to: .SetupReporter0)
+        stateMachine.addTransition(transition: .Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
+        stateMachine.addTransition(transition: .Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
+        stateMachine.addTransition(transition: .Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
+        stateMachine.addTransition(transition: .ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
+        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
+        stateMachine.addTransition(transition: .Disconnected, from: .Done, to: .QueryTime)
 
     }
     

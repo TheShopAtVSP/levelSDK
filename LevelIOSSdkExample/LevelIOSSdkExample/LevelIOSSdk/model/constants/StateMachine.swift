@@ -30,7 +30,7 @@ class StateMachine<State: Hashable, Transition: Hashable> {
         return transitions[state]?[transition] != nil
     }
     
-    typealias Observer = (oldState: State, newState: State) -> ()
+    typealias Observer = (_ oldState: State, _ newState: State) -> ()
     
     func advance(transition: Transition, observe: Observer? = nil) -> State {
         let prev = state
@@ -42,7 +42,7 @@ class StateMachine<State: Hashable, Transition: Hashable> {
                 debugPrint("StateMachine: advance advancing state")
                 state = next
                 
-                observe?(oldState: prev, newState: next)
+                observe?(prev, next)
             }
         }
         

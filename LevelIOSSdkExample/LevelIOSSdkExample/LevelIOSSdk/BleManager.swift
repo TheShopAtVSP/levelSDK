@@ -6,7 +6,7 @@
 //  Copyright © 2016 TheShop. All rights reserved.
 //
 
-import Foundation
+//import Foundation
 import CoreBluetooth
 import CoreLocation
 
@@ -29,11 +29,11 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     var clients: [NSUUID:DeviceObserverCallbacks]
-    let clientLockQueue = dispatch_queue_create("com.theshopatvsp.LockQueue", nil)
-    let deviceLockQueue = dispatch_queue_create("com.theshopatvsp.DeviceLockQueue", nil)
+    let clientLockQueue = DispatchQueue(label: "com.theshopatvsp.LockQueue")
+    let deviceLockQueue = DispatchQueue(label: "com.theshopatvsp.DeviceLockQueue")
 
     private var centralManager: CBCentralManager?
-    private var foundDevices: [NSUUID:BleFoundDevice]
+    private var foundDevices: [UUID:BleFoundDevice]
     private var device: CBPeripheral?
     private var notifyCount: Int = 0
     private var notifyAckCount: Int = 0
@@ -50,10 +50,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     private var connectionTries: Int = 0
     private var frameId: String?
 
-    private var timer: NSTimer?
-    private var disconnectTimer: NSTimer?
-    private var connectTimer: NSTimer?
-    private var activeTimeTimer: NSTimer?
+    private var timer: Timer?
+    private var disconnectTimer: Timer?
+    private var connectTimer: Timer?
+    private var activeTimeTimer: Timer?
 
     private var deviceId: DeviceIdManager
 
@@ -74,7 +74,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     override init() {
 
         self.clients = [NSUUID: DeviceObserverCallbacks]()
-        self.foundDevices = [NSUUID:BleFoundDevice]()
+        self.foundDevices = [UUID:BleFoundDevice]()
         self.deviceId = DeviceIdManager()
         self.commandQueue = [BleCommand]()
         self.packetParserManager = PacketParserManager()
@@ -91,17 +91,17 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.locationManager.distanceFilter = 5
         self.locationManager.pausesLocationUpdatesAutomatically = true
-        self.locationManager.activityType = CLActivityType.Fitness
+        self.locationManager.activityType = CLActivityType.fitness
         self.locationManager.requestAlwaysAuthorization()
         self.locationManager.startUpdatingLocation()
-        NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification,
-                                                                object: nil, queue: nil) {
+        NotificationCenter.default.addObserver(forName: Notification.Name.UIApplicationDidEnterBackground, object: nil, queue: nil) {
                                                                   (notification) in
                                                                   debugPrint("Monitoring significant location changes")
                                                                   self.locationManager.stopUpdatingLocation()
                                                                   self.locationManager.startMonitoringSignificantLocationChanges()
         }
-        NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidBecomeActiveNotification,
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name.UIApplicationDidBecomeActive,
                                                                 object: nil, queue: nil) {
                                                                   (notification) in
                                                                   debugPrint("updating location changes")
@@ -115,7 +115,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     convenience init(restorationId: String) {
         self.init()
 
-        let centralQueue = dispatch_queue_create("com.theshopatvsp.genesis", DISPATCH_QUEUE_SERIAL)
+        let centralQueue = DispatchQueue(label: "com.theshopatvsp.genesis")
         self.centralManager = CBCentralManager(delegate: self, queue: centralQueue, options: [CBCentralManagerOptionRestoreIdentifierKey: restorationId])
 //        bleManager = self
     }
@@ -125,14 +125,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func registerDeviceCallbacks(clientId: NSUUID, callbacks: DeviceObserverCallbacks) {
-        dispatch_sync(clientLockQueue) {
+        clientLockQueue.sync() {
             self.clients[clientId] = callbacks
         }
     }
 
     func unregisterDeviceCallbacks(clientId: NSUUID) {
-        dispatch_sync(clientLockQueue) {
-            self.clients.removeValueForKey(clientId)
+        clientLockQueue.sync() {
+            self.clients.removeValue(forKey: clientId)
         }
     }
 
@@ -151,7 +151,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     func sendLedCode(code: Int) {
         debugPrint("sendLedCode = \(code)")
         if deviceReady || isBlinkToLink() {
-            executeCommand(.CodeWR, packet: CodePacket(code: code))
+            executeCommand(command: .CodeWR, packet: CodePacket(code: code))
 
             if stateMachine.getState() == DeviceLifecycle.SendLedCode4 {
                 debugPrint("sending the last LED code, setting the disconnect timer")
@@ -161,7 +161,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func deviceLightsNotOn() {
-        var values = foundDevices.values.sort({$0.rssi > $1.rssi})
+        var values = foundDevices.values.sorted(by: {$0.rssi > $1.rssi})
 
         if let central = self.centralManager {
             if( self.device != nil ) {
@@ -170,7 +170,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
                 // Check for array index out of
               if connectionTries >= 0 && connectionTries < values.count {
-                connectToDevice(values[connectionTries].device)
+                connectToDevice(bleDevice: values[connectionTries].device)
                 connectionTries += 1
               }
 
@@ -180,11 +180,11 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func deleteSavedKey() {
         debugPrint("deleteSavedKey")
-        if let savedKeys = getDeviceKeys() where savedKeys != "" {
-            let keys: [String] = savedKeys.componentsSeparatedByString("|")
+        if let savedKeys = getDeviceKeys() , savedKeys != "" {
+            let keys: [String] = savedKeys.components(separatedBy: "|")
 
             for key in keys {
-                deleteDeviceIdentifier(key)
+                deleteDeviceIdentifier(key: key)
             }
         }
         resetDeviceKey()
@@ -198,37 +198,37 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func getBatteryLevel() {
         if deviceReady {
-            addCommand(BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryLevel))
+            addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryLevel))
         }
     }
 
     func getBatteryState() {
         if deviceReady {
-            addCommand(BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryState))
+            addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryState))
         }
     }
 
     func getFirmwareVersion() {
         if deviceReady {
-            addCommand(BleCommand(readWrite: .Read, charac: BleCharacteristics.FirmwareVersion))
+            addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.FirmwareVersion))
         }
     }
   
     func getBootloaderVersion() {
       if deviceReady {
-        addCommand(BleCommand(readWrite: .Read, charac: BleCharacteristics.BootloaderVersion))
+        addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BootloaderVersion))
       }
     }
   
     func setTransmitControlToOn() {
       if deviceReady {
-        executeCommand(DeviceCommand.TransmitControl, packet: CodePacket(code: 1))
+        executeCommand(command: DeviceCommand.TransmitControl, packet: CodePacket(code: 1))
       }
     }
 
     func getFrameInfo() {
         if deviceReady {
-            executeCommand(DeviceCommand.FrameRD, packet: nil)
+            executeCommand(command: DeviceCommand.FrameRD, packet: nil)
         }
     }
 
@@ -238,8 +238,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         b.append(0xEA)
         self.reboot = true
         debugPrint("rebooting device into DFU!!")
-        broadcastUpdate(.BootloaderMessage, thing: "Writing 0xEA to Battery Level Char")
-        addCommand(BleCommand(readWrite: .Write, charac: .BatteryLevel, bytes: b))
+        broadcastUpdate(message: .BootloaderMessage, thing: "Writing 0xEA to Battery Level Char" as NSObject)
+        addCommand(command: BleCommand(readWrite: .Write, charac: .BatteryLevel, bytes: b))
 
         self.firmware = firmwareFile
         self.clientBootloaderDelegate = delegate
@@ -247,14 +247,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func isBlinkToLink() -> Bool {
-        return stateMachine.getState().rawValue.lowercaseString.hasPrefix("sendledcode")
+        return stateMachine.getState().rawValue.lowercased().hasPrefix("sendledcode")
     }
 
     func startScan() {
         if let central = self.centralManager {
-            if central.state != .PoweredOn {
+            if central.state != .poweredOn {
                 debugPrint("CoreBluetooth not correctly initialized !\r\n")
-                broadcastUpdate(ClientMessages.BluetoothNotOn)
+                broadcastUpdate(message: ClientMessages.BluetoothNotOn)
                 return
             }
         }
@@ -264,16 +264,16 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         debugPrint(skeys)
 
         if let central = self.centralManager {
-            if let savedKeys: String = getDeviceKeys() where savedKeys != "" {
+            if let savedKeys: String = getDeviceKeys() , savedKeys != "" {
                 if let frameId = self.frameId {
-                    if savedKeys.rangeOfString(frameId) != nil {
+                    if savedKeys.range(of: frameId) != nil {
                         let deviceName = "Level " + frameId
-                        if let identifier = getDeviceIdentifier(deviceName) {
-                            var devices: [CBPeripheral] = central.retrievePeripheralsWithIdentifiers([identifier])
+                        if let identifier = getDeviceIdentifier(key: deviceName) {
+                            var devices: [CBPeripheral] = central.retrievePeripherals(withIdentifiers: [identifier as UUID])
 
                             if !devices.isEmpty {
                                 debugPrint("trying to connect to saved device \(devices[0].name)")
-                                connectToDevice(devices[0])
+                                connectToDevice(bleDevice: devices[0])
                                 return
                             }
                         }
@@ -281,15 +281,15 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                         //scan
                     }
                 } else {
-                    let keys: [String] = savedKeys.componentsSeparatedByString("|")
+                    let keys: [String] = savedKeys.components(separatedBy: "|")
 
                     for key in keys {
-                        if let identifier = getDeviceIdentifier(key) {
-                            let devices: [CBPeripheral] = central.retrievePeripheralsWithIdentifiers([identifier])
+                        if let identifier = getDeviceIdentifier(key: key) {
+                            let devices: [CBPeripheral] = central.retrievePeripherals(withIdentifiers: [identifier as UUID])
 
                             if !devices.isEmpty {
                                 debugPrint("trying to connect to saved device \(devices[0].name)")
-                                connectToDevice(devices[0])
+                                connectToDevice(bleDevice: devices[0])
                                 return
                             }
                         }
@@ -304,32 +304,32 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         setTimer()
         if let central = self.centralManager {
             //central.scanForPeripheralsWithServices([CBUUID(string: BleServices.UART.rawValue)], options: nil)
-            central.scanForPeripheralsWithServices(nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : NSNumber(bool: true)])
+            central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : NSNumber(value: true)])
         }
     }
 
     func setTimer() {
-        let runLoop: NSRunLoop = NSRunLoop.mainRunLoop()
+        let runLoop: RunLoop = RunLoop.main
         let fireDate: NSDate = NSDate(timeIntervalSinceNow: 15.0)
-        self.timer = NSTimer(fireDate: fireDate, interval: 0.1, target: self, selector: #selector(scanTimerExpired), userInfo: nil, repeats: false)
+        self.timer = Timer(fireAt: fireDate as Date, interval: 0.1, target: self, selector: #selector(scanTimerExpired), userInfo: nil, repeats: false)
 
-        runLoop.addTimer(self.timer!, forMode: NSRunLoopCommonModes)
+        runLoop.add(self.timer!, forMode: RunLoopMode.commonModes)
     }
 
     func setDisconnectTimer() {
-        let runLoop: NSRunLoop = NSRunLoop.mainRunLoop()
+        let runLoop: RunLoop = RunLoop.main
         let fireDate: NSDate = NSDate(timeIntervalSinceNow: 1.0)
-        self.disconnectTimer = NSTimer(fireDate: fireDate, interval: 0.1, target: self, selector: #selector(disconnectTimerExpired), userInfo: nil, repeats: false)
+        self.disconnectTimer = Timer(fireAt: fireDate as Date, interval: 0.1, target: self, selector: #selector(disconnectTimerExpired), userInfo: nil, repeats: false)
 
-        runLoop.addTimer(self.disconnectTimer!, forMode: NSRunLoopCommonModes)
+        runLoop.add(self.disconnectTimer!, forMode: RunLoopMode.commonModes)
     }
 
     func setConnectTimer() {
-        let runLoop: NSRunLoop = NSRunLoop.mainRunLoop()
+        let runLoop: RunLoop = RunLoop.main
         let fireDate: NSDate = NSDate(timeIntervalSinceNow: 20.0)
-        self.connectTimer = NSTimer(fireDate: fireDate, interval: 0.1, target: self, selector: #selector(connectTimerExpired), userInfo: nil, repeats: false)
+        self.connectTimer = Timer(fireAt: fireDate as Date, interval: 0.1, target: self, selector: #selector(connectTimerExpired), userInfo: nil, repeats: false)
 
-        runLoop.addTimer(self.connectTimer!, forMode: NSRunLoopCommonModes)
+        runLoop.add(self.connectTimer!, forMode: RunLoopMode.commonModes)
     }
 
     func scanTimerExpired() {
@@ -340,13 +340,13 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         debugPrint("Stop scanning timeout")
 
         if !foundDevices.isEmpty {
-            var values = foundDevices.values.sort({$0.rssi > $1.rssi})
+            var values = foundDevices.values.sorted(by: {$0.rssi > $1.rssi})
 //            self.device = nil
 //            if( self.device == nil ) {
 
                 debugPrint("connecting to \(self.device?.name) -- \(self.device?.identifier)")
                 connectionTries = connectionTries % values.count
-                connectToDevice(values[connectionTries].device)
+                connectToDevice(bleDevice: values[connectionTries].device)
                 connectionTries += 1
 //            }
         } else {
@@ -358,7 +358,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func disconnectTimerExpired() {
         debugPrint("disconnectTimerExpired, sending LedCodeFailed and disconnecting")
-        broadcastUpdate(.LedCodeFailed)
+        broadcastUpdate(message: .LedCodeFailed)
         /*if let central = self.centralManager {
             central.cancelPeripheralConnection(self.device!)
         }*/
@@ -380,7 +380,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 deviceLightsNotOn()
             }
         }*/
-        broadcastUpdate(.ConnectionTimeout)
+        broadcastUpdate(message: .ConnectionTimeout)
     }
 
     func reset() {
@@ -393,60 +393,60 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func saveDeviceKey(deviceKey: String) {
         debugPrint("saveDeviceKey \(deviceKey)")
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
 
-        if let value = defaults.stringForKey(DefaultKeys.deviceKeys.rawValue) where value != "" {
+        if let value = defaults.string(forKey: DefaultKeys.deviceKeys.rawValue) , value != "" {
             debugPrint("saveDeviceKey \(value)")
-            if value.rangeOfString(deviceKey) != nil {
+            if value.range(of: deviceKey) != nil {
                 debugPrint("saveDeviceKey: didn't find key adding")
-                let newValue = value + "|" + deviceKey.lowercaseString
+                let newValue = value + "|" + deviceKey.lowercased()
 
                 defaults.setValue(newValue, forKey: DefaultKeys.deviceKeys.rawValue)
             }
         } else {
             debugPrint("saveDeviceKey: no keys adding")
-            defaults.setValue(deviceKey.lowercaseString, forKey: DefaultKeys.deviceKeys.rawValue)
+            defaults.setValue(deviceKey.lowercased(), forKey: DefaultKeys.deviceKeys.rawValue)
         }
     }
 
     func resetDeviceKey() {
         debugPrint("resetDeviceKeys")
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
         defaults.setValue("", forKey: DefaultKeys.deviceKeys.rawValue)
     }
 
     func getDeviceKeys() -> String? {
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
 
-        return defaults.stringForKey(DefaultKeys.deviceKeys.rawValue)
+        return defaults.string(forKey: DefaultKeys.deviceKeys.rawValue)
     }
 
     func saveDeviceIdentifier(key: String, identifier: String) {
         debugPrint("saveDeviceIdentifier: \(key) \(identifier)")
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let values = key.componentsSeparatedByString(" ")
+        let defaults = UserDefaults.standard
+        let values = key.components(separatedBy: " ")
 
-        defaults.setValue(identifier, forKey: values[1].lowercaseString)
+        defaults.setValue(identifier, forKey: values[1].lowercased())
     }
 
     func deleteDeviceIdentifier(key: String) {
         debugPrint("deleteDeviceIdentifier: \(key)")
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let values = key.componentsSeparatedByString(" ")
+        let defaults = UserDefaults.standard
+        let values = key.components(separatedBy: " ")
 
-        defaults.removeObjectForKey(values[1])
+        defaults.removeObject(forKey: values[1])
     }
 
     func getDeviceIdentifier(key: String) -> NSUUID? {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let values = key.componentsSeparatedByString(" ")
+        let defaults = UserDefaults.standard
+        let values = key.components(separatedBy: " ")
 
         //let dict = defaults.dictionaryRepresentation()
 
         //debugPrint("\(dict)")
 
-        if let value = defaults.valueForKey(values[1].lowercaseString) {
-            return NSUUID(UUIDString: value as! String)
+        if let value = defaults.value(forKey: values[1].lowercased()) {
+            return NSUUID(uuidString: value as! String)
         }
 
         return nil
@@ -457,7 +457,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func centralManager(central: CBCentralManager, willRestoreState dict: [String:AnyObject]) {
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
-            connectToDevice(peripherals[0])
+            connectToDevice(bleDevice: peripherals[0])
         } else {
             startScan()
         }
@@ -470,7 +470,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         if let name = peripheral.name {
             //TODO remove 5b filter
-            if name.lowercaseString.rangeOfString("level") != nil {
+            if name.lowercased().range(of: "level") != nil {
                 if let frameId = self.frameId {
                     if frameId == "" {
                         debugPrint("device found: \(peripheral.name) \(RSSI)")
@@ -478,7 +478,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                         return
                     }
 
-                    if name.lowercaseString.rangeOfString(frameId.lowercaseString) != nil {
+                    if name.lowercased().range(of: frameId.lowercased()) != nil {
                         debugPrint("device found: \(peripheral.name) \(RSSI)")
                         self.foundDevices[peripheral.identifier] = BleFoundDevice(device: peripheral, rssi: Int(RSSI))
                     }
@@ -491,7 +491,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
-        print("didConnectPeripheral \(peripheral.identifier.UUIDString) \(peripheral.name)")
+        print("didConnectPeripheral \(peripheral.identifier.uuidString) \(peripheral.name)")
 
         self.disconnectRetries = 0
         self.connectTimer?.invalidate()
@@ -507,7 +507,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
-        print("didDisconnectPeripheral \(peripheral.identifier.UUIDString)")
+        print("didDisconnectPeripheral \(peripheral.identifier.uuidString)")
         var unrecoverableError = false
         self.connectTimer?.invalidate()
 
@@ -518,7 +518,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 debugPrint("here \(errorCode)")
                 if errorCode == 6 || errorCode == 7 {
                     debugPrint("there")
-                    broadcastUpdate(.BondError)
+                    broadcastUpdate(message: .BondError)
                     unrecoverableError = true
                 }
             }
@@ -528,20 +528,21 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         if !wannaBeActiveSteps.isEmpty {
             for step in wannaBeActiveSteps {
-                broadcastUpdate(.Step, thing: step)
+                broadcastUpdate(message: .Step, thing: step)
             }
         }
         debugPrint("will broadcast location")
         if user != nil {
           if let location = BleManager.currentLocation {
-              broadcastUpdate(.LastUserLocation, thing: LastLocation(
+              broadcastUpdate(message: .LastUserLocation, thing: LastLocation(
                 lat: location.coordinate.latitude,
                 long: location.coordinate.longitude,
                 accuracy: location.horizontalAccuracy,
                 alt: location.altitude,
                 glassName: user!.glassName,
-                timezone:NSTimeZone.localTimeZone().name))
-                debugPrint("broadcast location \(location.toJsonString())")
+                timezone:NSTimeZone.local.identifier))
+                //TODO: don't know how to convert this to swift 3
+                //debugPrint("broadcast location \(location.toJsonString())")
           }
         }
       
@@ -553,7 +554,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             stateMachine.reset()
         }
 
-        broadcastUpdate(.DeviceDisconnect)
+        broadcastUpdate(message: .DeviceDisconnect)
 
         if unrecoverableError {
             return
@@ -562,17 +563,17 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         //TODO error code 6 the bond is jacked up
 
         if self.reboot {
-            broadcastUpdate(.BootloaderMessage, thing: "Received Disconnect, we are rebooting!")
-            self.bootloaderManager?.start(self.firmware!)
+            broadcastUpdate(message: .BootloaderMessage, thing: "Received Disconnect, we are rebooting!" as NSObject)
+            self.bootloaderManager?.start(firmware: self.firmware!)
             self.reboot = false
             return
         }
 
         if let central = centralManager {
-            var devices: [CBPeripheral] = central.retrievePeripheralsWithIdentifiers([(self.device?.identifier)!])
+            var devices: [CBPeripheral] = central.retrievePeripherals(withIdentifiers: [(self.device?.identifier)!])
 
             if !devices.isEmpty {
-                connectToDevice(devices[0])
+                connectToDevice(bleDevice: devices[0])
                 //self.device!.discoverServices(nil)
                 return
             }
@@ -584,7 +585,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             self.device = bleDevice
             self.device?.delegate = self
             self.stateMachine.reset()
-            central.connectPeripheral(self.device!, options: nil)
+            central.connect(self.device!, options: nil)
             setConnectTimer()
         }
     }
@@ -595,37 +596,37 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     }
 
-    func centralManagerDidUpdateState(central: CBCentralManager) {
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
         print("centralManagerDidUpdateState: \(central.state.rawValue)")
         switch (central.state) {
-        case CBCentralManagerState.PoweredOff:
+        case CBManagerState.poweredOff:
             print("Powered off")
             let wasConnected = self.connected
             if wasConnected == true {
               self.connected = false
             }
-            broadcastUpdate(ClientMessages.BluetoothNotOn)
+            broadcastUpdate(message: ClientMessages.BluetoothNotOn)
             if wasConnected {
-                broadcastUpdate(ClientMessages.DeviceDisconnect)
+                broadcastUpdate(message: ClientMessages.DeviceDisconnect)
             }
                 //self.clearDevices()
-        case CBCentralManagerState.Unauthorized:
+        case CBManagerState.unauthorized:
             print("Unauthorized")
             // Indicate to user that the iOS device does not support BLE.
             //NSNotificationCenter.defaultCenter().postNotificationName(deviceMessageNotification, object: nil, userInfo: ["message": DeviceMessages.BluetoothNotSupported.rawValue])
             break
-        case CBCentralManagerState.Unknown:
+        case CBManagerState.unknown:
             print("unknown")
             // Wait for another event
             break
-        case CBCentralManagerState.PoweredOn:
+        case CBManagerState.poweredOn:
             print("Powered On")
             //self.startScan()
             break
-        case CBCentralManagerState.Resetting:
+        case CBManagerState.resetting:
             print("Reset")
                 //self.clearDevices()
-        case CBCentralManagerState.Unsupported:
+        case CBManagerState.unsupported:
             print("unsupported")
             break
         }
@@ -668,9 +669,9 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         for service in peripheral.services! {
             if [CBUUID(string: BleServices.UART.rawValue), CBUUID(string: BleServices.DeviceInfo.rawValue),
-                CBUUID(string: BleServices.Battery.rawValue)].contains(service.UUID) {
-                debugPrint("service \(service.UUID.UUIDString)")
-                peripheral.discoverCharacteristics(nil, forService: service)
+                CBUUID(string: BleServices.Battery.rawValue)].contains(service.uuid) {
+                debugPrint("service \(service.uuid.uuidString)")
+                peripheral.discoverCharacteristics(nil, for: service)
             }
         }
     }
@@ -690,28 +691,28 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
 
         for characteristic in service.characteristics! {
-            debugPrint("char UUID = \(characteristic.UUID.UUIDString)")
+            debugPrint("char UUID = \(characteristic.uuid.uuidString)")
 
-            if let charac = BleCharacteristics(rawValue: characteristic.UUID.UUIDString.lowercaseString) {
+            if let charac = BleCharacteristics(rawValue: characteristic.uuid.uuidString.lowercased()) {
                 debugPrint("characteristic \(charac)")
                 self.characteristicMap[charac] = characteristic
 
                 let properties: CBCharacteristicProperties = (characteristic as CBCharacteristic).properties
 
 
-                if charac == .BatteryLevel && properties.rawValue & CBCharacteristicProperties.Read.rawValue > 0 {
+                if charac == .BatteryLevel && properties.rawValue & CBCharacteristicProperties.read.rawValue > 0 {
                     debugPrint("Trying to read value of battery level characteristic")
                     self.pairing = true
-                    peripheral.readValueForCharacteristic(characteristic)
+                    peripheral.readValue(for: characteristic)
                 }
 
-                if charac == .BatteryLevel && properties.rawValue & CBCharacteristicProperties.Write.rawValue > 0 {
+                if charac == .BatteryLevel && properties.rawValue & CBCharacteristicProperties.write.rawValue > 0 {
                     debugPrint("Battery Level CAN WRITE")
                 }
 
-                if properties.rawValue & CBCharacteristicProperties.Notify.rawValue > 0 {
+                if properties.rawValue & CBCharacteristicProperties.notify.rawValue > 0 {
                     debugPrint("subscribing to notifications")
-                    peripheral.setNotifyValue(true, forCharacteristic: characteristic as CBCharacteristic)
+                    peripheral.setNotifyValue(true, for: characteristic as CBCharacteristic)
                     notifyCount+=1
                 }
             }
@@ -719,13 +720,13 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        debugPrint("char \(characteristic.UUID.UUIDString)")
-        let charac = BleCharacteristics(rawValue: characteristic.UUID.UUIDString.lowercaseString)
-        let data:NSData? = characteristic.value
+        debugPrint("char \(characteristic.uuid.uuidString)")
+        let charac = BleCharacteristics(rawValue: characteristic.uuid.uuidString.lowercased())
+        let data:NSData? = characteristic.value as NSData?
         if data == nil {
           return
         }
-        let bytes: [UInt8] = BitsHelper.nsdataToUInt8(data!)
+        let bytes: [UInt8] = BitsHelper.nsdataToUInt8(data: data!)
 
         debugPrint("didUpdateValue called char: \(charac) data: \(bytes)")
 
@@ -737,7 +738,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             switch ch {
                 case .BatteryLevel:
                     if bytes.count > 0 {
-                            broadcastUpdate(.BatteryLevel, thing: Int(bytes[0]))
+                            broadcastUpdate(message: .BatteryLevel, thing: Int(bytes[0]) as NSObject)
                     }
 
                     if self.pairing {
@@ -745,14 +746,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
                         let deviceKeys = getDeviceKeys()
 
-                        if deviceKeys == nil || deviceKeys?.rangeOfString((self.device?.name)!) == nil {
-                            saveDeviceKey((self.device?.name)!)
-                            saveDeviceIdentifier((self.device?.name!)!, identifier: (self.device?.identifier.UUIDString)!)
+                        if deviceKeys == nil || deviceKeys?.range(of: (self.device?.name)!) == nil {
+                            saveDeviceKey(deviceKey: (self.device?.name)!)
+                            saveDeviceIdentifier(key: (self.device?.name!)!, identifier: (self.device?.identifier.uuidString)!)
                         }
                     }
                 case .BatteryState:
                     if bytes.count > 0 {
-                        broadcastUpdate(.BatteryState, thing: Int(bytes[0]))
+                        broadcastUpdate(message: .BatteryState, thing: Int(bytes[0]) as NSObject)
                     }
                 case .FirmwareVersion:
                     if bytes.count > 0 {
@@ -762,7 +763,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                             version += String(Character(UnicodeScalar(b)))
                         }
 
-                        broadcastUpdate(.Firmware, thing: version)
+                        broadcastUpdate(message: .Firmware, thing: version as NSObject)
                     }
               case .BootloaderVersion:
                 if bytes.count > 0 {
@@ -772,16 +773,16 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     version += String(Character(UnicodeScalar(b)))
                   }
                   
-                  var components = version.componentsSeparatedByString("BL-")
+                    var components = version.components(separatedBy: "BL-")
                   if components.count == 2 {
                     version = components[1]
                   }
                   
-                  broadcastUpdate(.Bootloader, thing: version)
+                  broadcastUpdate(message: .Bootloader, thing: version as NSObject)
                 }
 
                 case .UartRX:
-                    handleUartResponse(bytes)
+                    handleUartResponse(bytes: bytes)
                 default:
                     debugPrint("characteristic not parceable \(charac)")
             }
@@ -795,7 +796,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func peripheral(peripheral: CBPeripheral, didUpdateNotificationStateForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
         if( error == nil ) {
-            print("Updated notification state for characteristic with UUID \(characteristic.UUID) on service with  UUID \(characteristic.service.UUID) on peripheral with UUID \(peripheral.identifier)")
+            print("Updated notification state for characteristic with UUID \(characteristic.uuid) on service with  UUID \(characteristic.service.uuid) on peripheral with UUID \(peripheral.identifier)")
             // Send notification that Bluetooth is connected and all required characteristics are discovered
             notifyAckCount+=1
             if notifyAckCount == notifyCount {
@@ -803,10 +804,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 debugPrint("connected to call chars, ready to do something else")
                 //TODO: bonding stuff here
                 keySent = true
-                executeCommand(DeviceCommand.CodeWR, packet: CodePacket(code: 0x88))
+                executeCommand(command: DeviceCommand.CodeWR, packet: CodePacket(code: 0x88))
             }
         } else {
-            print("Error in setting notification state for characteristic with UUID \(characteristic.UUID) on service with  UUID \(characteristic.service.UUID) on peripheral with UUID \(peripheral.identifier)")
+            print("Error in setting notification state for characteristic with UUID \(characteristic.uuid) on service with  UUID \(characteristic.service.uuid) on peripheral with UUID \(peripheral.identifier)")
             print("Error code was \(error!.description)")
         }
     }
@@ -832,7 +833,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     func handleUartResponse(bytes: [UInt8]) {
         if bytes.count < 2 {
             debugPrint("No idea what came back from the device bytes.count < 2")
-            sendNack(NackError.DataLengthError.rawValue)
+            sendNack(reasonCode: NackError.DataLengthError.rawValue)
         }
 
         if self.deviceId.packetIdIn < 0 {
@@ -844,14 +845,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         var dataPacket: DataPacket?
 
         do {
-            dataPacket = try packetParserManager.parse(self.deviceId.packetIdIn, packet: bytes)
+            dataPacket = try packetParserManager.parse(expectedPacketIdIn: self.deviceId.packetIdIn, packet: bytes)
             debugPrint("data packet = \(dataPacket)")
         } catch PacketErrors.DataLength {
-            sendNack(NackError.DataLengthError.rawValue)
+            sendNack(reasonCode: NackError.DataLengthError.rawValue)
             print("Data Length")
         } catch PacketErrors.SequenceId {
             print("Sequence Id")
-            sendNack(NackError.PacketSeqError.rawValue)
+            sendNack(reasonCode: NackError.PacketSeqError.rawValue)
         } catch {
             print(error)
         }
@@ -862,34 +863,34 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
                 let record: RecordData = dataPacket as! RecordData
                 //fix the time
-                if !stateMachine.isTimeCorrect() && !withinThreeWeeks(record.timestamp) {
+                if !stateMachine.isTimeCorrect() && !withinThreeWeeks(timestamp: record.timestamp) {
                     record.timestamp += stateMachine.timeDiff
                 }
 
-                parseRecord(record)
+                parseRecord(record: record)
             }
 
             if stateMachine.getState() == DeviceLifecycle.SendLedCode4 && dataPacket is CodePacket {
                 self.disconnectTimer?.invalidate()
-                broadcastUpdate(.LedCodeDone)
-                NSThread.sleepForTimeInterval(1.0)
+                broadcastUpdate(message: .LedCodeDone)
+                Thread.sleep(forTimeInterval: 1.0)
             }
 
 
             if stateMachine.getState() == DeviceLifecycle.QueryLock && dataPacket is CodePacket {
                 debugPrint("Code received!!!")
                 keySent = false
-                NSThread.sleepForTimeInterval(1.0)
+                Thread.sleep(forTimeInterval: 1.0)
                 callLifecycleState()
             } else if stateMachine.getState() == .QueryLock && dataPacket is LockPacket {
                 debugPrint("Start blink to link")
 
-                stateMachine.processResult(dataPacket!)
+                stateMachine.processResult(data: dataPacket!)
 
                 if stateMachine.isLedCodeNeeded() {
-                    broadcastUpdate(.InputLedCode)
+                    broadcastUpdate(message: .InputLedCode)
                 } else {
-                    broadcastUpdate(.LedCodeNotNeeded)
+                    broadcastUpdate(message: .LedCodeNotNeeded)
                 }
 
                 if stateMachine.getState().getCommand() != .Unknown {
@@ -898,10 +899,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             } else if stateMachine.getState() != DeviceLifecycle.Done {
                 debugPrint("doing lifecycle thing")
                 if dataPacket is CodePacket {
-                    broadcastUpdate(.LedCodeAccepted)
+                    broadcastUpdate(message: .LedCodeAccepted)
                 }
 
-                stateMachine.processResult(dataPacket!)
+                stateMachine.processResult(data: dataPacket!)
 
                 if stateMachine.getState().getCommand() != .Unknown {
                     callLifecycleState()
@@ -910,19 +911,19 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 if stateMachine.getState() == .Done {
                     //executeCommand(.DeleteBond, packet: DeleteBondPacket())
                     deviceReady = true
-                    broadcastUpdate(ClientMessages.DeviceReady)
+                    broadcastUpdate(message: ClientMessages.DeviceReady)
 
                 }
             }
 
             if dataPacket is Frame {
-                broadcastUpdate(.Frame, thing: dataPacket!)
+                broadcastUpdate(message: .Frame, thing: dataPacket!)
             }
         }
     }
 
     func parseRecord(record: RecordData) {
-        let timezone = NSTimeZone.localTimeZone().name
+        let timezone = NSTimeZone.local.identifier
         switch record.reporter {
         case 0:
             debugPrint("Steps!!")
@@ -934,7 +935,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 total += Int(b)
 
                 if let helper = self.calculationHelper {
-                    totalDistance += helper.calculateDistanceInMiles(Int(b))
+                    totalDistance += helper.calculateDistanceInMiles(stepCount: Int(b))
                 }
             }
             
@@ -943,8 +944,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
             if let helper = self.calculationHelper {
                 debugPrint("calculationHelper is set!!!")
-                step.mets = helper.calculateMets(total)
-                step.activeBurn = helper.calculateActiveBurn(total)
+                step.mets = helper.calculateMets(stepTotal: total)
+                step.activeBurn = helper.calculateActiveBurn(stepTotal: total)
                 step.distance = totalDistance
 
                 if step.mets > 1.38 {
@@ -965,21 +966,21 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                                 dubstep.activeTime = 1
                             }
 
-                            broadcastUpdate(.Step, thing: dubstep)
+                            broadcastUpdate(message: .Step, thing: dubstep)
                         }
 
                         wannaBeActiveSteps = [Step]()
                     }
 
                     debugPrint("broadcasting current active step")
-                    broadcastUpdate(.Step, thing: step)
+                    broadcastUpdate(message: .Step, thing: step)
                 } else if userIsActive || inactiveCount > 0 {
                     debugPrint("inactive Step!!!")
 
                     if inactiveCount <= 3 {
                         wannaBeActiveSteps.append(step)
                     } else {
-                        broadcastUpdate(.Step, thing: step)
+                        broadcastUpdate(message: .Step, thing: step)
                     }
 
                     if userIsActive && !activeTimeSet {
@@ -991,24 +992,24 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     userIsActive = false
                     inactiveCount += 1
                 } else {
-                    broadcastUpdate(.Step, thing: step)
+                    broadcastUpdate(message: .Step, thing: step)
                 }
             } else {
                 debugPrint("calculationHelper is NOT set")
-                broadcastUpdate(.Step, thing: step)
+                broadcastUpdate(message: .Step, thing: step)
             }
         case 1:
             var bytes = record.data
-            broadcastUpdate(.BatteryReport, thing: BatteryReport(recordId: Int64(record.id), percent: Int(bytes[0]), volt: Int(BitsHelper.convertToUInt16(bytes[2], lsb: bytes[1])), timestamp: record.timestamp, timezone: timezone))
+            broadcastUpdate(message: .BatteryReport, thing: BatteryReport(recordId: Int64(record.id), percent: Int(bytes[0]), volt: Int(BitsHelper.convertToUInt16(msb: bytes[2], lsb: bytes[1])), timestamp: record.timestamp, timezone: timezone))
         case 2:
             var counter: Int = 0
             var bytes: [UInt8] = record.data
 
-            for i in 0.stride(to: bytes.count, by: 2) {
-                let reading = BitsHelper.convertToUInt16(bytes[i+1], lsb: bytes[i])
+            for i in stride(from: 0, to: bytes.count, by: 2) {
+                let reading = BitsHelper.convertToUInt16(msb: bytes[i+1], lsb: bytes[i])
                 let time = record.timestamp + Double(counter * 5)
                 
-                broadcastUpdate(.MotionData, thing: AccelFilt(recordId: Int64(record.id), timestamp: time, timezone: timezone, reading: Int(reading)))
+                broadcastUpdate(message: .MotionData, thing: AccelFilt(recordId: Int64(record.id), timestamp: time, timezone: timezone, reading: Int(reading)))
                 counter += 1
             }
         default:
@@ -1018,13 +1019,13 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     func setActiveTimeTimer() {
         debugPrint("setActiveTimer called")
-        let runLoop: NSRunLoop = NSRunLoop.mainRunLoop()
+        let runLoop: RunLoop = RunLoop.main
         let fireDate: NSDate = NSDate(timeIntervalSinceNow: 190.0)
-        self.activeTimeTimer = NSTimer(fireDate: fireDate, interval: 0.1, target: self, selector: #selector(activeTimeTimerExpired), userInfo: nil, repeats: false)
+        self.activeTimeTimer = Timer(fireAt: fireDate as Date, interval: 0.1, target: self, selector: #selector(activeTimeTimerExpired), userInfo: nil, repeats: false)
 
         //self.activeTimeTimer = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: #selector(activeTimeTimerExpired), userInfo: nil, repeats: false)
 
-        runLoop.addTimer(self.activeTimeTimer!, forMode: NSRunLoopCommonModes)
+        runLoop.add(self.activeTimeTimer!, forMode: RunLoopMode.commonModes)
     }
 
     func activeTimeTimerExpired() {
@@ -1033,7 +1034,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         if !wannaBeActiveSteps.isEmpty {
             debugPrint("draining wannaBeActiveSteps")
             for step in wannaBeActiveSteps {
-                broadcastUpdate(.Step, thing: step)
+                broadcastUpdate(message: .Step, thing: step)
             }
 
             wannaBeActiveSteps = [Step]()
@@ -1051,14 +1052,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             }
 
             self.deviceId.incPacketIdOut()
-            addCommand(BleCommand(readWrite: .Write, charac: .UartTx, bytes: bytes))
+            addCommand(command: BleCommand(readWrite: .Write, charac: .UartTx, bytes: bytes))
         }
     }
 
     //MARK: command stuff here
     func executeCommand(command: DeviceCommand, packet: DataPacket?) {
         debugPrint("executeCommand: \(command)")
-        dispatch_sync(clientLockQueue) {
+        clientLockQueue.sync() {
             var bytes: [UInt8] = [UInt8]()
 
             bytes.append(UInt8(self.deviceId.packetIdOut))
@@ -1071,7 +1072,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
             self.deviceId.incPacketIdOut()
 
-            self.addCommand(BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
+            self.addCommand(command: BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
         }
     }
 
@@ -1085,7 +1086,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     func startCommandQueue() {
         self.queueRunning = true
 
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) {
+        DispatchQueue.global(qos: .utility).async {
             while self.queueRunning {
                 //print("command queue running \(self.sentCommand)")
                 if !self.commandQueue.isEmpty && self.sentCommand == nil {
@@ -1093,9 +1094,9 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     self.sentCommand = self.commandQueue.removeFirst()
 
                     if self.sentCommand!.readOrWrite == ReadWrite.Read {
-                        self.readCharacteristic(self.sentCommand!.characteristic)
+                        self.readCharacteristic(characteristic: self.sentCommand!.characteristic)
                     } else if self.sentCommand!.readOrWrite == ReadWrite.Write {
-                        self.writeToCharacteristic(self.sentCommand!.characteristic, data: self.sentCommand!.data)
+                        self.writeToCharacteristic(characteristic: self.sentCommand!.characteristic, data: self.sentCommand!.data)
                     }
                 }
 
@@ -1104,7 +1105,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
                 }
 
-                NSThread.sleepForTimeInterval(0.5)
+                Thread.sleep(forTimeInterval: 0.5)
 
                 //acks are fucked up and need to be cleared manually
                 if self.sentCommand != nil {
@@ -1134,10 +1135,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                   print("writing characteristic Error : \(characteristic)  NOT FOUND")
                   return
                 }
-                self.device!.writeValue(packet, forCharacteristic: characteristicToWrite, type: .WithoutResponse)
+                self.device!.writeValue(packet as Data, for: characteristicToWrite, type: .withoutResponse)
 
                 if self.reboot {
-                    NSThread.sleepForTimeInterval(1.0)
+                    Thread.sleep(forTimeInterval: 1.0)
 
                     if let central = self.centralManager {
                         central.cancelPeripheralConnection(self.device!)
@@ -1145,14 +1146,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 }
             }
             else {
-                self.device!.writeValue(packet, forCharacteristic: self.characteristicMap[characteristic]!, type: .WithResponse)
+                self.device!.writeValue(packet as Data, for: self.characteristicMap[characteristic]!, type: .withResponse)
             }
         }
     }
 
     func readCharacteristic(characteristic: BleCharacteristics) {
         print("read characteristic \(characteristic)")
-        self.device!.readValueForCharacteristic(self.characteristicMap[characteristic]!)
+        self.device!.readValue(for: self.characteristicMap[characteristic]!)
     }
 
     func sendAck() {
@@ -1160,14 +1161,14 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         debugPrint("sending ack \(bytes)")
 
-        addCommand(BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
+        addCommand(command: BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
         deviceId.incPacketIdOut()
     }
 
     func sendNack(reasonCode: Int) {
         let bytes: [UInt8] = [UInt8(deviceId.packetIdOut), UInt8(DeviceCommand.Nack.rawValue), UInt8(reasonCode), UInt8(deviceId.packetIdIn)]
 
-        addCommand(BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
+        addCommand(command: BleCommand(readWrite: ReadWrite.Write, charac: BleCharacteristics.UartTx, bytes: bytes))
         deviceId.incPacketIdOut()
     }
 
@@ -1209,23 +1210,23 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             for client: DeviceObserverCallbacks in clients.values {
                 switch message {
                 case .Step:
-                    client.onStep(thing as! Step)
+                    client.onStep(step: thing as! Step)
                 case .BatteryReport:
-                    client.onBatteryReport(thing as! BatteryReport)
+                    client.onBatteryReport(batteryReport: thing as! BatteryReport)
                 case .MotionData:
-                    client.onMotionData(thing as! AccelFilt)
+                    client.onMotionData(accelFilt: thing as! AccelFilt)
                 case .BatteryLevel:
-                    client.onBatteryLevel(thing as! Int)
+                    client.onBatteryLevel(level: thing as! Int)
                 case .BatteryState:
-                    client.onBatteryState(BatteryState(rawValue: thing as! Int)!)
+                    client.onBatteryState(state: BatteryState(rawValue: thing as! Int)!)
                 case .Firmware:
-                    client.onFirmwareVersion(thing as! String)
+                    client.onFirmwareVersion(firmwareVersion: thing as! String)
                 case .Bootloader:
-                  client.onBootloaderVersion(thing as! String)
+                  client.onBootloaderVersion(bootloaderVersion: thing as! String)
                 case .Frame:
-                    client.onFrame(thing as! Frame)
+                    client.onFrame(frame: thing as! Frame)
                 case .LastUserLocation:
-                    client.onLastUserLocation(thing as! LastLocation)
+                    client.onLastUserLocation(location: thing as! LastLocation)
                 default:
                     debugPrint("OH NO!!! bad client message")
                 }
@@ -1244,8 +1245,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 counter += 1
                 if counter % 3 == 0 {
                     print("pausing")
-                    self.locationManager.allowDeferredLocationUpdatesUntilTraveled(10, timeout: 120)
-                    NSNotificationCenter.defaultCenter().postNotificationName("locationUpdaterThingieStatus", object: self, userInfo: ["status": "pausing"])
+                    self.locationManager.allowDeferredLocationUpdates(untilTraveled: 10, timeout: 120)
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: "locationUpdaterThingieStatus"), object: self, userInfo: ["status": "pausing"])
                 }
 
                 if let savedLocation: CLLocation = BleManager.currentLocation {
@@ -1258,16 +1259,16 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                             abs(savedLocation.horizontalAccuracy - location.horizontalAccuracy) < 5 )) { //new location with better accuracy or close enough better accuracy
                         print("saving location")
                         BleManager.currentLocation = location
-                        NSNotificationCenter.defaultCenter().postNotificationName("locationUpdaterThingieStatus", object: self, userInfo: ["status": "saved"])
+                        NotificationCenter.default.post(name: NSNotification.Name("locationUpdaterThingieStatus"), object: self, userInfo: ["status": "saved"])
                     }
                 } else {
                     print("no saved location")
                     BleManager.currentLocation = location
-                    NSNotificationCenter.defaultCenter().postNotificationName("locationUpdaterThingieStatus", object: self, userInfo: ["status": "1st save"])
+                    NotificationCenter.default.post(name: NSNotification.Name("locationUpdaterThingieStatus"), object: self, userInfo: ["status": "1st save"])
                 }
             }
 
-            NSNotificationCenter.defaultCenter().postNotificationName("locationUpdaterThingie", object: self, userInfo: ["lat": location.coordinate.latitude, "long": location.coordinate.longitude, "accr": location.horizontalAccuracy,
+            NotificationCenter.default.post(name: NSNotification.Name("locationUpdaterThingie"), object: self, userInfo: ["lat": location.coordinate.latitude, "long": location.coordinate.longitude, "accr": location.horizontalAccuracy,
                 "timestamp": location.timestamp])
             print("\(counter) didUpdateLocations:  \(location.coordinate.latitude), \(location.coordinate.longitude), \(location.horizontalAccuracy)")
         }
@@ -1282,13 +1283,13 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func bootloaderProgress(progress: Int) {
-        self.clientBootloaderDelegate?.bootloaderProgress(progress)
+        self.clientBootloaderDelegate?.bootloaderProgress(progress: progress)
     }
 
     func bootloaderErrorOccured(errorCode: BootloaderError) {
         startScan()
 
-        self.clientBootloaderDelegate?.bootloaderErrorOccured(errorCode)
+        self.clientBootloaderDelegate?.bootloaderErrorOccured(errorCode: errorCode)
     }
 
 }
