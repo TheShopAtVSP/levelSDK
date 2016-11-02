@@ -191,19 +191,19 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
         guard let cm = self.📱
             else {return}
         
-        if (cm.state != .PoweredOn) {
+        if (cm.state != .poweredOn) {
             NSLog("CoreBluetooth not correctly initialized !\r\n")
-            BleManager.sharedInstance.broadcastUpdate(ClientMessages.BluetoothNotOn)
+            BleManager.sharedInstance.broadcastUpdate(message: ClientMessages.BluetoothNotOn)
             return
         }
         
         self.👓 = nil
         
         NSLog("beginning scan")
-        cm.scanForPeripheralsWithServices(nil, options: nil)
+        cm.scanForPeripherals(withServices: nil, options: nil)
         
         let dfu = CBUUID(string: ServiceUUID.DFU_UUID.rawValue)
-        cm.scanForPeripheralsWithServices([dfu], options: nil)
+        cm.scanForPeripherals(withServices: [dfu], options: nil)
         
         /*
          cm.scanForPeripheralsWithServices([CBUUID(string: ServiceUUID.UART_UUID.rawValue),
@@ -214,30 +214,30 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
         
         
         //start a timer; in x seconds go look at the list of discovered gizmos and do something
-        self.delay(5.0) {
+        self.delay(delay: 5.0) {
             guard let cm = self.📱
                 else {return}
             
             self.stopScanning()
             
             if(self.discovered.count == 0){
-                self.reportError(BootloaderError.NoDeviceFound )
+                self.reportError(errorCode: BootloaderError.NoDeviceFound )
                 return
             }
             
             let discoveredRssiValues = Array(self.discovered.keys)
             
-            if let peripheral = self.discovered[self.findClosestRssi(discoveredRssiValues)] {
+            if let peripheral = self.discovered[self.findClosestRssi(rssis: discoveredRssiValues)] {
                 self.👓 = peripheral;
                 NSLog("Okay, let's rock...")
-                cm.connectPeripheral(peripheral, options: nil)
+                cm.connect(peripheral, options: nil)
                 
                 //we need a timeout here in case we can't connect, otherwise the iphone will just keep trying forever
-                self.delay(5.0){
+                self.delay(delay: 5.0){
                     if(self.connected == false){
                         NSLog("Looks like we failed to connect")
                         self.cancel()
-                        self.reportError(BootloaderError.UnableToConnectToDevice)
+                        self.reportError(errorCode: BootloaderError.UnableToConnectToDevice)
                     }
                 }
                 
@@ -245,7 +245,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
                 
             } else {
                 NSLog("Selected RSSI not found in the list of discovered devices, so that's bad.")
-                self.reportError(BootloaderError.NoDeviceFound)
+                self.reportError(errorCode: BootloaderError.NoDeviceFound)
             }
             
         }
@@ -255,7 +255,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
      Takes the list of rssis discovered by the central mananger and finds the closest one
      */
     func findClosestRssi(rssis: [Double]) -> Double{
-        let sorted = rssis.sort(>)
+        let sorted = rssis.sorted(by: >)
         NSLog("selecting device with this rssi: \(sorted.first)" )
         return sorted.first!
     }
@@ -265,13 +265,8 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     /**
      Fires a closure after a specified delay.  Thanks, Stack Overflow!
      */
-    func delay(delay: Double, closure: () -> ()) {
-        dispatch_after(
-            dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(delay * Double(NSEC_PER_SEC))
-            ),
-            dispatch_get_main_queue(), closure)
+    func delay(delay: Double, closure: @escaping () -> ()) {
+        DispatchQueue.main.asyncAfter(deadline: (DispatchTime.now() + delay), execute: closure)
     }
     
     
@@ -295,7 +290,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
         guard let d = self.delegate
             else{return}
         
-        d.bootloaderErrorOccured(errorCode)
+        d.bootloaderErrorOccured(errorCode: errorCode)
         
         self.cancel()
     }
@@ -307,37 +302,37 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
      Delegate method called when the central manager's state changes---the main job of this method is to start the scanning
      and updating process when bluetooth powers on.
      */
-    func centralManagerDidUpdateState(central: CBCentralManager) {
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
         
         NSLog("update state \(central.state)  \(central.state.rawValue)")
         switch (central.state) {
-        case CBCentralManagerState.PoweredOff:
+        case CBManagerState.poweredOff:
             NSLog("CM: Powered off")
-            self.reportError(.BluetoothPoweredOff)
+            self.reportError(errorCode: .BluetoothPoweredOff)
             
             
-        case CBCentralManagerState.Unauthorized:
+        case CBManagerState.unauthorized:
             NSLog("CM: Unauthorized")
-            self.reportError(.BluetoothUnauthorized)
+            self.reportError(errorCode: .BluetoothUnauthorized)
             
             
-        case CBCentralManagerState.Unknown:
+        case CBManagerState.unknown:
             NSLog("CM: unknown")
             // Wait for another event
             break
             
-        case CBCentralManagerState.PoweredOn:
+        case CBManagerState.poweredOn:
             NSLog("CM: Powered On")
             self.startScan()
             
             
-        case CBCentralManagerState.Resetting:
+        case CBManagerState.resetting:
             NSLog("CM: Reset")
             self.clearDevices()
             
-        case CBCentralManagerState.Unsupported:
+        case CBManagerState.unsupported:
             NSLog("CM: unsupported")
-            self.reportError(.BluetoothUnsupported)
+            self.reportError(errorCode: .BluetoothUnsupported)
             
         }
         
@@ -370,7 +365,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
      */
     func centralManager(central: CBCentralManager, didFailToConnectPeripheral peripheral: CBPeripheral, error: NSError?) {
         NSLog("Could not connect \(error)")
-        self.reportError(.UnableToConnectToDevice)
+        self.reportError(errorCode: .UnableToConnectToDevice)
         
     }
     
@@ -391,11 +386,11 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
             else {return}
         
         if(numberOfAttempts >= numberOfTimesToRetry){
-            self.reportError(.TooManyRetries)
+            self.reportError(errorCode: .TooManyRetries)
         }
         numberOfAttempts += 1
         
-        let selectedFirmware = DFUFirmware(urlToZipFile: url)
+        let selectedFirmware = DFUFirmware(urlToZipFile: url as URL)
         
         if let firm = selectedFirmware {
             NSLog("firmware: \(selectedFirmware!.fileName) \(selectedFirmware!.debugDescription)")
@@ -421,46 +416,48 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
      We're going to just pass Nordic's log messages right along.
      We're also going to ignore log levels for the moment, because that's how we roll.
      */
-    func logWith(level: LogLevel, message: String) {
+    func logWith(_ level: LogLevel, message: String) {
         NSLog("Log message from the DFU: %@", message)
     }
     
     //MARK: nordic service delegate
     
-    func didStateChangedTo(state: State) {
+    func didStateChangedTo(_ state: DFUState) {
         NSLog("DFU state is now: ")
         
         switch state {
-        case .Connecting:
+        case .connecting:
             NSLog("DFU: connecting")
-        case .Starting:
+        case .starting:
             NSLog("DFU: Starting")
-        case .EnablingDfuMode:
+        case .enablingDfuMode:
             NSLog("DFU: EnablingDfuMode")
-        case .Uploading:
+        case .uploading:
             NSLog("DFU: Uploading")
-        case .Validating:
+        case .validating:
             NSLog("DFU: Validating")
-        case .Disconnecting:
+        case .disconnecting:
             NSLog("DFU: Disconnecting")
-        case .Completed:
+        case .completed:
             NSLog("DFU: Completed")
             self.cancel()
             self.delegate?.bootloaderFinished()
-        case .Aborted:
+        case .aborted:
             NSLog("DFU: Aborted")
+        default:
+            NSLog("didStateChangedTo default clause \(state)")
         }
         
         
     }
     
-    func didErrorOccur(error: DFUError, withMessage message: String) {
+    func didErrorOccur(_ error: DFUError, withMessage message: String) {
         NSLog("Error! \(error) \(message)")
         
         //RemoteInvalidState - retry on this one
         
         switch error{
-        case .RemoteInvalidState:
+        case .remoteInvalidState:
             NSLog("retry case \(numberOfAttempts) \(numberOfTimesToRetry)")
             //retry
             if(numberOfAttempts < numberOfTimesToRetry){
@@ -468,12 +465,12 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
                 letsSeeIfThisWorks()
             } else {
                 NSLog("Do, we're not going to keep trying.")
-                self.reportError(.FailureWithDFU(error))
+                self.reportError(errorCode: .FailureWithDFU(error))
             }
         default:
             NSLog("report and bail")
             //report an error and bail
-            self.reportError(.FailureWithDFU(error))
+            self.reportError(errorCode: .FailureWithDFU(error))
             
         }
         
@@ -482,12 +479,12 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     
     //MARK: nordic progress delegate
     
-    func onUploadProgress(part: Int, totalParts: Int, progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
+    func onUploadProgress(_ part: Int, totalParts: Int, progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
         
         NSLog("Progress! ", part, totalParts, progress)
         guard let delegate = self.delegate
             else {return}
-        delegate.bootloaderProgress(progress)
+        delegate.bootloaderProgress(progress: progress)
         
     }
     

@@ -47,7 +47,7 @@ class CalculationHelper: NSObject {
     
     func calculateMets(stepTotal: Int) -> Double {
         var mets: Double = 0
-        let speed: Double = calculateSpeedInMPH(stepTotal)
+        let speed: Double = calculateSpeedInMPH(stepTotal: stepTotal)
         
         if speed > 1.51 && speed <= 5 {
             mets = METS_SLOW_MULTIPLIER * exp(speed * METS_SLOW_STEPRATE_MULTIPLIER)
@@ -59,15 +59,15 @@ class CalculationHelper: NSObject {
     }
     
     func calculateDistanceInMiles(stepCount: Int) -> Double {
-        return (Double(stepCount) * calculateStringLength(stepCount)) / Double(feetPerMile)
+        return (Double(stepCount) * calculateStringLength(stepCount: stepCount)) / Double(feetPerMile)
     }
     
     func calculateActiveBurn(stepTotal: Int) -> Double {
-        return calculateActiveBurnWithWeight(stepTotal, weight: Double(user.weightLbs))
+        return calculateActiveBurnWithWeight(stepTotal: stepTotal, weight: Double(user.weightLbs))
     }
     
     private func calculateActiveBurnWithWeight(stepTotal: Int, weight: Double) -> Double {
-        let mets: Double = calculateMets(stepTotal)
+        let mets: Double = calculateMets(stepTotal: stepTotal)
         
         if mets > 0 {
             return mets * userMetsCorrectionFactor * ACTIVE_BURN_MULTIPLIER * weight * ACTIVE_BURN_WEIGHT_MULTIPLIER
@@ -77,7 +77,7 @@ class CalculationHelper: NSObject {
     }
     
     private func calculateSpeedInMPH(stepTotal: Int) -> Double {
-        let stepRate: Double = calculateStepRate(stepTotal)
+        let stepRate: Double = calculateStepRate(stepCount: stepTotal)
         var speedMPH: Double = 0
         
         if stepRate > 0 {
@@ -92,9 +92,9 @@ class CalculationHelper: NSObject {
     }
     
     private func calculateStringLength(stepCount: Int) -> Double {
-        var stepRate: Double = calculateStepRate(stepCount)
+        var stepRate: Double = calculateStepRate(stepCount: stepCount)
         let heightInInches: Double = Double(calculateHeightInInches()) / Double(12)
-        var fit: [Double], x: [Double] = [Double](count: 2, repeatedValue: 0), y: [Double] = [Double](count: 2, repeatedValue: 0)
+        var fit: [Double], x: [Double] = [Double](repeating: 0, count: 2), y: [Double] = [Double](repeating: 0, count: 2)
         
         if user.gender == .Male {
             x[0] = 1.6
@@ -116,7 +116,7 @@ class CalculationHelper: NSObject {
             }
         }
         
-        fit = LeastSquaresExponentialFit.fit(x, y: y)
+        fit = LeastSquaresExponentialFit.fit(x: x, y: y)
         
         return (fit[0] * exp(fit[1] * stepRate))
     }

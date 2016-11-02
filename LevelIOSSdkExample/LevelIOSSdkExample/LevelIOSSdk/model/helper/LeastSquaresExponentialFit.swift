@@ -13,8 +13,8 @@ class LeastSquaresExponentialFit {
         var a: Double = 0.0, b: Double = 0.0, part1: Double = 0.0, part2: Double = 0.0, part3: Double = 0.0,
             part4: Double = 0.0, part5: Double = 0.0, part6: Double = 0.0
         
-//        for i in (1...x.count) {
-      for (var i = 0; i < 2; i = i+1) {
+      for i in (1...x.count) {
+      //for (var i = 0; i < 2; i = i+1) {
             part1 += pow(x[i], 2) * y[i]
             part2 += log(y[i]) * y[i]
             part3 += x[i] * y[i]

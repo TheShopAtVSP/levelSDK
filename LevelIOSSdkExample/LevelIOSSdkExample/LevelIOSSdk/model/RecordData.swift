@@ -19,13 +19,13 @@ class RecordData: TimePacket {
     init(bytes: [UInt8]) {
         self.totalBytes = BitsHelper.convertTo12BitInt(bytes: [UInt8](bytes[4...5])) - HEADER_LENGTH
         //debugPrint("RecordData - \(totalBytes)")
-        self.data = [UInt8](repeatedValue: 0, count: self.totalBytes)
+        self.data = [UInt8](repeating: 0, count: self.totalBytes)
         
         super.init()
         
-        self.id = Int(BitsHelper.convertToUInt16(bytes[3], lsb: bytes[2]))
+        self.id = Int(BitsHelper.convertToUInt16(msb: bytes[3], lsb: bytes[2]))
         self.reporter = (Int(bytes[5] & 0xF0) >> 4)
-        self.timestamp = Double(BitsHelper.convertToUInt32([UInt8](bytes[6...9])))
+        self.timestamp = Double(BitsHelper.convertToUInt32(bytes: [UInt8](bytes[6...9])))
         self.originalTimestamp = self.timestamp * 1000
         
         if self.totalBytes > 0 {

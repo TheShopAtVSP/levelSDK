@@ -58,15 +58,15 @@ class ReportAttributes: DataPacket {
         //TODO check if any are null
         self.indVarScale = Int(bytes[4])
         self.dataFieldsPerSample = Int(bytes[8])
-        self.samplesPerRecord = Int(BitsHelper.convertToUInt16(bytes[10], lsb: bytes[9]))
-        self.maxRecordsPerReport = Int(BitsHelper.convertToUInt16(bytes[12], lsb: bytes[11]))
+        self.samplesPerRecord = Int(BitsHelper.convertToUInt16(msb: bytes[10], lsb: bytes[9]))
+        self.maxRecordsPerReport = Int(BitsHelper.convertToUInt16(msb: bytes[12], lsb: bytes[11]))
     }
     
     override func getPacket() -> [UInt8] {
-        var bytes: [UInt8] = [UInt8](count: 11, repeatedValue: UInt8())
+        var bytes: [UInt8] = [UInt8](repeating: UInt8(), count: 11)
         
-        var samplesPerRecord: [UInt8] = BitsHelper.convertTo2Bytes(self.samplesPerRecord)
-        var maxRecords: [UInt8] = BitsHelper.convertTo2Bytes(self.maxRecordsPerReport)
+        var samplesPerRecord: [UInt8] = BitsHelper.convertTo2Bytes(number: self.samplesPerRecord)
+        var maxRecords: [UInt8] = BitsHelper.convertTo2Bytes(number: self.maxRecordsPerReport)
         
         bytes[0] = UInt8(self.reporter)
         bytes[1] = UInt8((self.indVarDescription?.rawValue)!)
@@ -83,7 +83,7 @@ class ReportAttributes: DataPacket {
         return bytes
     }
     
-    override func isEqual(object: AnyObject?) -> Bool {
+    func isEqual(object: AnyObject?) -> Bool {
         if self === object {
             return true
         }

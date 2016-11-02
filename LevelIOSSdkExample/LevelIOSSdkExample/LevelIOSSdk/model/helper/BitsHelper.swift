@@ -26,7 +26,7 @@ class BitsHelper {
     
     class func convertToUInt32(bytes: [UInt8]) -> UInt32 {
         var value : UInt32 = 0
-        for byte in bytes.reverse() {
+        for byte in bytes.reversed() {
             value = value << 8
             value = value | UInt32(byte)
         }
@@ -36,12 +36,12 @@ class BitsHelper {
     
     class func nsdataToUInt8(data: NSData) -> [UInt8] {
         if data.length > 0 {
-            let count = data.length / sizeof(UInt8)
+            let count = data.length / MemoryLayout<UInt8>.size
             
             if count > 0 {
-                var array = [UInt8](count: count, repeatedValue: 0)
+                var array = [UInt8](repeating: 0, count: count)
                 
-                data.getBytes(&array, length: count * sizeof(UInt8))
+                data.getBytes(&array, length: count * MemoryLayout<UInt8>.size)
                 
                 return array
             }
@@ -52,7 +52,7 @@ class BitsHelper {
     
     class func convertTo4Bytes(time: Double) -> [UInt8] {
         let nixTime: Int = Int(time)
-        var bytes: [UInt8] = [UInt8](count: 4, repeatedValue: UInt8())
+        var bytes: [UInt8] = [UInt8](repeating: UInt8(), count: 4)
         
         bytes[0] = UInt8(nixTime & 0x000000FF)
         bytes[1] = UInt8((nixTime >> 8) & 0x000000FF)
@@ -63,7 +63,7 @@ class BitsHelper {
     }
     
     class func convertTo2Bytes(number: Int) -> [UInt8] {
-        var bytes: [UInt8] = [UInt8](count: 2, repeatedValue: UInt8())
+        var bytes: [UInt8] = [UInt8](repeating: UInt8(), count: 2)
         
         bytes[0] = UInt8(number & 0x000000FF)
         bytes[1] = UInt8((number >> 8) & 0x000000FF)

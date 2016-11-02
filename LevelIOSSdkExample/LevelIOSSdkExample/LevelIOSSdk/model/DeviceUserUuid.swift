@@ -25,33 +25,33 @@ class DeviceUserUuid: DataPacket {
     convenience init(bytes: [UInt8]) {
         var uuidNoDashes: String = ""
         
-        for i in (2...17).reverse() {
-            let hexes: [UInt8] = BitsHelper.convertTo2Bytes(Int(bytes[i]))
+        for i in (2...17).reversed() {
+            let hexes: [UInt8] = BitsHelper.convertTo2Bytes(number: Int(bytes[i]))
             
             for hex in hexes {
                 uuidNoDashes += DeviceUserUuid.back[hex]!
             }
         }
         
-        uuidNoDashes.insert("-", atIndex: uuidNoDashes.startIndex.advancedBy(8))
-        uuidNoDashes.insert("-", atIndex: uuidNoDashes.startIndex.advancedBy(12))
-        uuidNoDashes.insert("-", atIndex: uuidNoDashes.startIndex.advancedBy(16))
-        uuidNoDashes.insert("-", atIndex: uuidNoDashes.startIndex.advancedBy(20))
+        uuidNoDashes.insert("-", at: uuidNoDashes.index(uuidNoDashes.startIndex, offsetBy: 8))
+        uuidNoDashes.insert("-", at: uuidNoDashes.index(uuidNoDashes.startIndex, offsetBy: 12))
+        uuidNoDashes.insert("-", at: uuidNoDashes.index(uuidNoDashes.startIndex, offsetBy: 16))
+        uuidNoDashes.insert("-", at: uuidNoDashes.index(uuidNoDashes.startIndex, offsetBy: 20))
     
         self.init(userUuid: uuidNoDashes)
     }
     
     override func getPacket() -> [UInt8] {
-        var bytes: [UInt8] = [UInt8](count: 16, repeatedValue: UInt8())
+        var bytes: [UInt8] = [UInt8](repeating: UInt8(), count: 16)
         var counter: Int = 15
         
-        let withoutDashes: String = uuid.stringByReplacingOccurrencesOfString("-", withString: "").lowercaseString
+        let withoutDashes: String = uuid.replacingOccurrences(of: "-", with: "").lowercased()
         
-        for i in 0.stride(to: 32, by: 2) {
-            let first: UInt8 = DeviceUserUuid.hex[withoutDashes[withoutDashes.startIndex.advancedBy(i)]]!
-            let second: UInt8 = DeviceUserUuid.hex[withoutDashes[withoutDashes.startIndex.advancedBy(i+1)]]!
+        for i in stride(from: 0, to: 32, by: 2) {
+            let first: UInt8 = DeviceUserUuid.hex[withoutDashes[withoutDashes.index(withoutDashes.startIndex, offsetBy: i)]]!
+            let second: UInt8 = DeviceUserUuid.hex[withoutDashes[withoutDashes.index(withoutDashes.startIndex, offsetBy: (i+1))]]!
             
-            bytes[counter] = BitsHelper.convertToUInt8(first, lsb: second)
+            bytes[counter] = BitsHelper.convertToUInt8(msb: first, lsb: second)
             
             counter -= 1
         }

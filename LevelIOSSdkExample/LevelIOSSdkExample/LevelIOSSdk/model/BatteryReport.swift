@@ -19,7 +19,9 @@ class BatteryReport: NSObject {
         self.recordId = recordId
         self.percentage = percent
         self.voltage = volt
-        self.timestamp = NSDate(timeIntervalSince1970:timestamp).toString(format: DateFormat.Custom("yyyy-MM-dd'T'HH:mm:ss.SSS"))
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        self.timestamp = dateFormatter.string(from: NSDate(timeIntervalSince1970:timestamp) as Date)
         self.timezone = timezone
     }
 }

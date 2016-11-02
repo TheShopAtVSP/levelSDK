@@ -5,6 +5,10 @@
 
 import Foundation
 
+enum Gender: String {
+    case Male, Female
+}
+
 class LevelUser: NSObject {
     var id: String
     var name: String

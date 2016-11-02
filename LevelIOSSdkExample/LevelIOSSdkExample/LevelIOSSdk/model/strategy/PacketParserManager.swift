@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum PacketErrors: ErrorType {
+enum PacketErrors: Error {
     case DataLength
     case SequenceId
 }
@@ -35,7 +35,7 @@ class PacketParserManager {
         
         if let command: DeviceCommand = DeviceCommand(rawValue: Int(packet[1])) {
             if command == DeviceCommand.StartOfRecord {
-                record = StartOfRecordParser().parse(packet) as? RecordData
+                record = StartOfRecordParser().parse(bytes: packet) as? RecordData
                 
                 if setTime {
                     record!.timestamp = record!.timestamp + timeDiff
@@ -45,14 +45,14 @@ class PacketParserManager {
                     return record
                 }
             } else if command == DeviceCommand.RecordContinue {
-                record!.continueRecord(packet)
+                record!.continueRecord(bytes: packet)
                 
                 if record!.isFinished() {
                     return record
                 }
             } else {
-                if let parser: DataPacketParserProtocol = factory.getDataPacket(packet) {
-                    let packet: DataPacket = parser.parse(packet)!
+                if let parser: DataPacketParserProtocol = factory.getDataPacket(bytes: packet) {
+                    let packet: DataPacket = parser.parse(bytes: packet)!
                     
                     if packet is TimePacket {
                         let timePacket: TimePacket = packet as! TimePacket
