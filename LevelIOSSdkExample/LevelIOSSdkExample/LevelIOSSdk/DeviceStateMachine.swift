@@ -157,10 +157,10 @@ class DeviceStateMachine {
             debugPrint("QueryLock is what is going on \(lock.lock)")
             
             if lock.lock == 0 {
-                stateMachine.advance(transition: DeviceTransition.NeedLedCode)
+                _ = stateMachine.advance(transition: DeviceTransition.NeedLedCode)
                 ledCodeNeeded = true
             } else {
-                stateMachine.advance(transition: DeviceTransition.GotLock)
+                _ = stateMachine.advance(transition: DeviceTransition.GotLock)
             }
             
             debugPrint("state on exit of QueryLock is \(stateMachine.state)")
@@ -170,7 +170,7 @@ class DeviceStateMachine {
         
         if stateMachine.state.rawValue.lowercased().hasPrefix("sendledcode") {
             debugPrint("led code received, moving on")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
             return
         }
         
@@ -248,47 +248,47 @@ class DeviceStateMachine {
             transmitControlOn = true
         }
         
-        stateMachine.advance(transition: stateMachine.state.getTransition())
+        _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         
         if stateMachine.state == DeviceLifecycle.SetTime && timeIsCorrect {
             debugPrint("time is correct next state please")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.DisableReporters && ((reporter0Right && reporter1Right && reporter2Right) || data.reportControl == 0) {
             debugPrint("reporters are right or already disabled, next!")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.RetrieveData && totalRecordsToDownload == 0 {
             debugPrint("no data to download next!")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter0 && reporter0Right {
             debugPrint("no need to setup reporter 0")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter1 && reporter1Right {
             debugPrint("no need to setup reporter 1")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.SetupReporter2 && reporter2Right {
             debugPrint("no need to setup reporter 2")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.EnableReporters && reporter0On && reporter1On && reporter2On {
             debugPrint("reporters are all enabled next")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.EnsureTransmitControlOn && transmitControlOn {
             debugPrint("trasmit control is already on! next")
-            stateMachine.advance(transition: stateMachine.state.getTransition())
+            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         }
         
         if stateMachine.state == DeviceLifecycle.DisableReporters {
@@ -302,7 +302,7 @@ class DeviceStateMachine {
     }
     
     func disconnected() {
-        stateMachine.advance(transition: DeviceTransition.Disconnected)
+        _ = stateMachine.advance(transition: DeviceTransition.Disconnected)
     }
     
     func reset() {

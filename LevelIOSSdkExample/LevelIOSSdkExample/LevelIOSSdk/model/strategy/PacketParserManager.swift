@@ -45,7 +45,7 @@ class PacketParserManager {
                     return record
                 }
             } else if command == DeviceCommand.RecordContinue {
-                record!.continueRecord(bytes: packet)
+                _ = record!.continueRecord(bytes: packet)
                 
                 if record!.isFinished() {
                     return record

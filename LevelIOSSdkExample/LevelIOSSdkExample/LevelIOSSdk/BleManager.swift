@@ -20,7 +20,7 @@ enum DefaultKeys: String {
     case deviceKeys
 }
 
-var bleManager:BleManager!// = BleManager(restorationId: centralManagerId)
+private let bleManager = BleManager(restorationId: centralManagerId)
 let centralManagerId = "deviceBLEUniqueIdentifierThing"
 
 class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationManagerDelegate, BootloaderDelegate {
@@ -117,6 +117,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         let centralQueue = DispatchQueue(label: "com.theshopatvsp.genesis")
         self.centralManager = CBCentralManager(delegate: self, queue: centralQueue, options: [CBCentralManagerOptionRestoreIdentifierKey: restorationId])
+        debugPrint("Hey made it to the end!!!!")
 //        bleManager = self
     }
 
@@ -131,7 +132,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func unregisterDeviceCallbacks(clientId: NSUUID) {
-        clientLockQueue.sync() {
+        _ = clientLockQueue.sync() {
             self.clients.removeValue(forKey: clientId)
         }
     }
@@ -161,6 +162,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
 
     func deviceLightsNotOn() {
+        debugPrint("deviceLightsNotOn")
         var values = foundDevices.values.sorted(by: {$0.rssi > $1.rssi})
 
         if let central = self.centralManager {
@@ -258,10 +260,6 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 return
             }
         }
-
-        let skeys = getDeviceKeys()
-
-        debugPrint(skeys)
 
         if let central = self.centralManager {
             if let savedKeys: String = getDeviceKeys() , savedKeys != "" {
@@ -455,7 +453,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
 // MARK: - CBCentralManagerDelegate
 
-    func centralManager(central: CBCentralManager, willRestoreState dict: [String:AnyObject]) {
+    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String:Any]) {
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
             connectToDevice(bleDevice: peripherals[0])
         } else {
@@ -463,7 +461,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String:AnyObject], RSSI: NSNumber) {
+    func centralManager(_ : CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String:Any], rssi RSSI: NSNumber) {
         if Int(RSSI) > 0 {
             return
         }
@@ -490,7 +488,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("didConnectPeripheral \(peripheral.identifier.uuidString) \(peripheral.name)")
 
         self.disconnectRetries = 0
@@ -506,22 +504,22 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         central.stopScan()*/
     }
 
-    func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("didDisconnectPeripheral \(peripheral.identifier.uuidString)")
         var unrecoverableError = false
         self.connectTimer?.invalidate()
 
-        if error != nil {
-            debugPrint("error: \(error?.description) \(error.debugDescription) \(error?.code)")
+        if let realError = error {
+            let rError = realError as NSError
+            debugPrint("error: \(rError.debugDescription) \(rError.code)")
 
-            if let errorCode = error?.code {
+            let errorCode = rError.code
                 debugPrint("here \(errorCode)")
                 if errorCode == 6 || errorCode == 7 {
                     debugPrint("there")
                     broadcastUpdate(message: .BondError)
                     unrecoverableError = true
                 }
-            }
         }
 
         reset()
@@ -590,10 +588,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func centralManager(central: CBCentralManager,
-                        didFailToConnectPeripheral peripheral: CBPeripheral,
-                        error: NSError?) {
-
+    func centralManager(_ central: CBCentralManager,
+                        didFailToConnect peripheral: CBPeripheral,
+                        error: Error?) {
+        debugPrint("didFailToConnect")
     }
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -636,20 +634,20 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
   
 //  func centralManager(central: CBCentralManager, willRestoreState dict: [String:AnyObject]) {
 
-    func peripheralDidUpdateName(peripheral: CBPeripheral) {
+    func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
 
     }
 
-    func peripheral(peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+    func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
     }
 
-    func peripheralDidUpdateRSSI(peripheral: CBPeripheral, error: NSError?) {
+    func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
     }
 
-    func peripheral(peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
     }
 
-    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         print("didDiscoverServices")
         if (peripheral != self.device) {
             // Wrong Peripheral
@@ -657,7 +655,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
 
         if (error != nil) {
-            print("didDiscoverService error: \(error?.description) --- \(error.debugDescription)")
+            let realError = error as! NSError
+            print("didDiscoverService error: \(realError.description) --- \(realError.debugDescription)")
             return
         }
 
@@ -676,10 +675,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func peripheral(peripheral: CBPeripheral, didDiscoverIncludedServicesForService service: CBService, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
     }
 
-    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         print("didDiscoverCharacteristicsForService called")
         if (peripheral != self.device) {
             // Wrong Peripheral
@@ -719,7 +718,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         debugPrint("char \(characteristic.uuid.uuidString)")
         let charac = BleCharacteristics(rawValue: characteristic.uuid.uuidString.lowercased())
         let data:NSData? = characteristic.value as NSData?
@@ -789,12 +788,12 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func peripheral(peripheral: CBPeripheral, didWriteValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         debugPrint("didWriteValueForCharacteristic")
         sentCommand = nil
     }
 
-    func peripheral(peripheral: CBPeripheral, didUpdateNotificationStateForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         if( error == nil ) {
             print("Updated notification state for characteristic with UUID \(characteristic.uuid) on service with  UUID \(characteristic.service.uuid) on peripheral with UUID \(peripheral.identifier)")
             // Send notification that Bluetooth is connected and all required characteristics are discovered
@@ -807,20 +806,21 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 executeCommand(command: DeviceCommand.CodeWR, packet: CodePacket(code: 0x88))
             }
         } else {
+            let realError = error as! NSError
             print("Error in setting notification state for characteristic with UUID \(characteristic.uuid) on service with  UUID \(characteristic.service.uuid) on peripheral with UUID \(peripheral.identifier)")
-            print("Error code was \(error!.description)")
+            print("Error code was \(realError.description)")
         }
     }
 
-    func peripheral(peripheral: CBPeripheral, didDiscoverDescriptorsForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
         debugPrint("didUpdateValueForDescriptor")
     }
 
-    func peripheral(peripheral: CBPeripheral, didUpdateValueForDescriptor descriptor: CBDescriptor, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
         debugPrint("didUpdateValueForDescriptor")
     }
 
-    func peripheral(peripheral: CBPeripheral, didWriteValueForDescriptor descriptor: CBDescriptor, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
         debugPrint("didWriteValueForDescriptor")
     }
 
@@ -1234,7 +1234,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         }
     }
 
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 
         if let location = locations.last {
             print("got location")

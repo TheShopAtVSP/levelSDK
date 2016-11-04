@@ -342,7 +342,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     /**
      When a device is discovered, add it to the list of discovered devices (And nothing else, yet.)
      */
-    func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String:AnyObject], RSSI: NSNumber) {
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String:Any], rssi RSSI: NSNumber) {
         
         NSLog("didDiscoverPeripheral \(peripheral) \(advertisementData) \(RSSI)" )
         discovered[Double(RSSI)] = peripheral
@@ -352,7 +352,7 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     /**
      Do some cleanup when the device disconnects.
      */
-    func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         self.👓 = peripheral
         discovered.removeAll()
         self.connected = true
@@ -363,8 +363,8 @@ class BootloaderManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     /**
      On a failure, report an error back out.
      */
-    func centralManager(central: CBCentralManager, didFailToConnectPeripheral peripheral: CBPeripheral, error: NSError?) {
-        NSLog("Could not connect \(error)")
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        NSLog("Could not connect \(error.debugDescription)")
         self.reportError(errorCode: .UnableToConnectToDevice)
         
     }

@@ -21,8 +21,6 @@ class StateMachine<State: Hashable, Transition: Hashable> {
             transitions[first] = [:]
         }
         
-        debugPrint("StateMachine: addTransition \(transition) - \(first) - \(second)")
-        
         transitions[first]?[transition] = second
     }
     
@@ -34,19 +32,14 @@ class StateMachine<State: Hashable, Transition: Hashable> {
     
     func advance(transition: Transition, observe: Observer? = nil) -> State {
         let prev = state
-        debugPrint("StateMachine: advance \(prev) - \(transition)")
         
         if let next = transitions[prev]?[transition] {
-            debugPrint("StateMachine: advance next = \(next)")
             if next != prev {
-                debugPrint("StateMachine: advance advancing state")
                 state = next
                 
                 observe?(prev, next)
             }
         }
-        
-        debugPrint("StateMachine: advance on exit = \(state)")
         
         return state
     }

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		19488F6F1DCBB3D700C2B531 /* levelPurpleButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6B1DCBB3D700C2B531 /* levelPurpleButton.png */; };
+		19488F701DCBB3D700C2B531 /* levelRedButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6C1DCBB3D700C2B531 /* levelRedButton.png */; };
+		19488F711DCBB3D700C2B531 /* levelWhiteButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6D1DCBB3D700C2B531 /* levelWhiteButton.png */; };
+		19488F721DCBB3D700C2B531 /* levelYellowButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6E1DCBB3D700C2B531 /* levelYellowButton.png */; };
 		1988CBF21DC940D300AA8A8F /* BleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBED1DC940D300AA8A8F /* BleManager.swift */; };
 		1988CBF31DC940D300AA8A8F /* BootloaderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */; };
 		1988CBF41DC940D300AA8A8F /* DeviceClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */; };
@@ -91,6 +95,10 @@
 
 /* Begin PBXFileReference section */
 		17363981EBAAADC917E988FE /* Pods-LevelIOSSdkExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LevelIOSSdkExampleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-LevelIOSSdkExampleTests/Pods-LevelIOSSdkExampleTests.release.xcconfig"; sourceTree = "<group>"; };
+		19488F6B1DCBB3D700C2B531 /* levelPurpleButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelPurpleButton.png; sourceTree = "<group>"; };
+		19488F6C1DCBB3D700C2B531 /* levelRedButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelRedButton.png; sourceTree = "<group>"; };
+		19488F6D1DCBB3D700C2B531 /* levelWhiteButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelWhiteButton.png; sourceTree = "<group>"; };
+		19488F6E1DCBB3D700C2B531 /* levelYellowButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelYellowButton.png; sourceTree = "<group>"; };
 		1988CBED1DC940D300AA8A8F /* BleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleManager.swift; path = LevelIOSSdk/BleManager.swift; sourceTree = "<group>"; };
 		1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootloaderManager.swift; path = LevelIOSSdk/BootloaderManager.swift; sourceTree = "<group>"; };
 		1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceClient.swift; path = LevelIOSSdk/DeviceClient.swift; sourceTree = "<group>"; };
@@ -195,9 +203,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		19488F731DCBB3EF00C2B531 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				19488F6B1DCBB3D700C2B531 /* levelPurpleButton.png */,
+				19488F6C1DCBB3D700C2B531 /* levelRedButton.png */,
+				19488F6D1DCBB3D700C2B531 /* levelWhiteButton.png */,
+				19488F6E1DCBB3D700C2B531 /* levelYellowButton.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
 		1988CBF71DC940E700AA8A8F /* LevelIOSSdk */ = {
 			isa = PBXGroup;
 			children = (
+				19488F731DCBB3EF00C2B531 /* Images */,
 				1988CBF81DC9410900AA8A8F /* model */,
 				1988CBED1DC940D300AA8A8F /* BleManager.swift */,
 				1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */,
@@ -436,7 +456,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = TheShop;
 				TargetAttributes = {
 					19B6447B1DC3CA7F00006C41 = {
@@ -486,8 +506,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19488F711DCBB3D700C2B531 /* levelWhiteButton.png in Resources */,
+				19488F6F1DCBB3D700C2B531 /* levelPurpleButton.png in Resources */,
 				19B6448C1DC3CA7F00006C41 /* LaunchScreen.storyboard in Resources */,
+				19488F701DCBB3D700C2B531 /* levelRedButton.png in Resources */,
 				19B644891DC3CA7F00006C41 /* Assets.xcassets in Resources */,
+				19488F721DCBB3D700C2B531 /* levelYellowButton.png in Resources */,
 				19B644871DC3CA7F00006C41 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -778,6 +802,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -828,6 +853,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -857,6 +883,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FB3E9EE8ECDA5C692850C1AD /* Pods-LevelIOSSdkExample.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = YVVF26BL6H;
 				INFOPLIST_FILE = LevelIOSSdkExample/Info.plist;
@@ -871,6 +898,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3FE6874F442E6FD1DCC8959A /* Pods-LevelIOSSdkExample.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = YVVF26BL6H;
 				INFOPLIST_FILE = LevelIOSSdkExample/Info.plist;
