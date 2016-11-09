@@ -17,6 +17,7 @@ class ReportAttributes: DataPacket {
     var dataFieldsPerSample: Int?
     var samplesPerRecord: Int
     var maxRecordsPerReport: Int
+    var queryOnly: Bool = false
     
     override init() {
         self.indVarDescription = IndependentVariableDescription.Unitless
@@ -29,6 +30,13 @@ class ReportAttributes: DataPacket {
         self.maxRecordsPerReport = -1
         
         super.init()
+    }
+    
+    convenience init(reporter: Int) {
+        self.init()
+        
+        self.reporter = reporter
+        self.queryOnly = true
     }
     
     convenience init(reporter: Int, indVarDesc: IndependentVariableDescription, indVarScale: Int, depVarDesc: DependentVariableDescription,
@@ -45,6 +53,31 @@ class ReportAttributes: DataPacket {
         self.dataFieldsPerSample = dataFieldsPerSample
         self.samplesPerRecord = samplesPerRecord
         self.maxRecordsPerReport = maxRecordsPerReport
+    }
+    
+    convenience init(config: ReporterConfig) {
+        self.init()
+        
+        self.reporter = config.reporter.rawValue
+        self.indVarDescription = config.indVarDesc
+        self.indVarScale = config.samplingFrequency
+        
+        switch( config.reporter ) {
+            case .Steps:
+                self.depVarDescription = DependentVariableDescription.StepPerTime
+            case .Accel:
+                self.depVarDescription = DependentVariableDescription.AccelerometerRaw
+            case .Gyro:
+                self.depVarDescription = DependentVariableDescription.GyrometerRaw
+            default:
+                self.depVarDescription = DependentVariableDescription.AccelerometerRaw
+        }
+        
+        self.depDataType = DependentDataType.Int16
+        self.depDataScale = config.dependentDataScale
+        self.dataFieldsPerSample = config.dataFields
+        self.samplesPerRecord = config.samplesPerRecord
+        self.maxRecordsPerReport = config.maxNumberOfRecords
     }
     
     convenience init(bytes: [UInt8]) {
@@ -69,16 +102,19 @@ class ReportAttributes: DataPacket {
         var maxRecords: [UInt8] = BitsHelper.convertTo2Bytes(number: self.maxRecordsPerReport)
         
         bytes[0] = UInt8(self.reporter)
-        bytes[1] = UInt8((self.indVarDescription?.rawValue)!)
-        bytes[2] = UInt8(self.indVarScale)
-        bytes[3] = UInt8((self.depVarDescription?.rawValue)!)
-        bytes[4] = UInt8((self.depDataType?.rawValue)!)
-        bytes[5] = UInt8((self.depDataScale?.rawValue)!)
-        bytes[6] = UInt8(self.dataFieldsPerSample!)
-        bytes[7] = samplesPerRecord[0]
-        bytes[8] = samplesPerRecord[1]
-        bytes[9] = maxRecords[0]
-        bytes[10] = maxRecords[1]
+        
+        if !queryOnly {
+            bytes[1] = UInt8((self.indVarDescription?.rawValue)!)
+            bytes[2] = UInt8(self.indVarScale)
+            bytes[3] = UInt8((self.depVarDescription?.rawValue)!)
+            bytes[4] = UInt8((self.depDataType?.rawValue)!)
+            bytes[5] = UInt8((self.depDataScale?.rawValue)!)
+            bytes[6] = UInt8(self.dataFieldsPerSample!)
+            bytes[7] = samplesPerRecord[0]
+            bytes[8] = samplesPerRecord[1]
+            bytes[9] = maxRecords[0]
+            bytes[10] = maxRecords[1]
+        }
         
         return bytes
     }

@@ -28,6 +28,7 @@ class DataPacketFactory {
         self.parserMap[DeviceCommand.FrameRD] = FrameParser()
         self.parserMap[DeviceCommand.FrameWR] = FrameParser()
         self.parserMap[DeviceCommand.DeleteBond] = DeleteBondParser()
+        self.parserMap[DeviceCommand.NukeRecords] = NukePacketParser()
     }
     
     func getDataPacket(bytes: [UInt8]) -> DataPacketParserProtocol? {

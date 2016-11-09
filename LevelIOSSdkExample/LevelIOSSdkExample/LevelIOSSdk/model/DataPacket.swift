@@ -14,6 +14,8 @@ class DataPacket: NSObject {
     var reportControl: Int
     var command: DeviceCommand
     var received: NSDate
+    var nackError: NackError
+    var subError: ReporterError
     
     override init() {
         self.id = -1
@@ -21,6 +23,8 @@ class DataPacket: NSObject {
         self.reportControl = -1
         self.command = .Nack
         received = NSDate()
+        self.nackError = .None
+        subError = .NoError
     }
     
     convenience init(reportControl: Int) {

@@ -11,6 +11,11 @@
 		19488F701DCBB3D700C2B531 /* levelRedButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6C1DCBB3D700C2B531 /* levelRedButton.png */; };
 		19488F711DCBB3D700C2B531 /* levelWhiteButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6D1DCBB3D700C2B531 /* levelWhiteButton.png */; };
 		19488F721DCBB3D700C2B531 /* levelYellowButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 19488F6E1DCBB3D700C2B531 /* levelYellowButton.png */; };
+		19488F751DCC0C7A00C2B531 /* ReporterType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19488F741DCC0C7A00C2B531 /* ReporterType.swift */; };
+		19488F771DCC0CAB00C2B531 /* ReporterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19488F761DCC0CAB00C2B531 /* ReporterConfig.swift */; };
+		19488F791DCD0F1600C2B531 /* NukeRecordsPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19488F781DCD0F1600C2B531 /* NukeRecordsPacket.swift */; };
+		19488F7B1DCD105600C2B531 /* NukePacketParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19488F7A1DCD105600C2B531 /* NukePacketParser.swift */; };
+		19488F7D1DCD4F4C00C2B531 /* ReporterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19488F7C1DCD4F4C00C2B531 /* ReporterError.swift */; };
 		1988CBF21DC940D300AA8A8F /* BleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBED1DC940D300AA8A8F /* BleManager.swift */; };
 		1988CBF31DC940D300AA8A8F /* BootloaderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */; };
 		1988CBF41DC940D300AA8A8F /* DeviceClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */; };
@@ -99,6 +104,11 @@
 		19488F6C1DCBB3D700C2B531 /* levelRedButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelRedButton.png; sourceTree = "<group>"; };
 		19488F6D1DCBB3D700C2B531 /* levelWhiteButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelWhiteButton.png; sourceTree = "<group>"; };
 		19488F6E1DCBB3D700C2B531 /* levelYellowButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = levelYellowButton.png; sourceTree = "<group>"; };
+		19488F741DCC0C7A00C2B531 /* ReporterType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReporterType.swift; path = LevelIOSSdk/model/constants/ReporterType.swift; sourceTree = "<group>"; };
+		19488F761DCC0CAB00C2B531 /* ReporterConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReporterConfig.swift; path = LevelIOSSdk/model/ReporterConfig.swift; sourceTree = "<group>"; };
+		19488F781DCD0F1600C2B531 /* NukeRecordsPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NukeRecordsPacket.swift; path = LevelIOSSdk/model/NukeRecordsPacket.swift; sourceTree = "<group>"; };
+		19488F7A1DCD105600C2B531 /* NukePacketParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NukePacketParser.swift; path = LevelIOSSdk/model/strategy/NukePacketParser.swift; sourceTree = "<group>"; };
+		19488F7C1DCD4F4C00C2B531 /* ReporterError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReporterError.swift; path = LevelIOSSdk/model/constants/ReporterError.swift; sourceTree = "<group>"; };
 		1988CBED1DC940D300AA8A8F /* BleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleManager.swift; path = LevelIOSSdk/BleManager.swift; sourceTree = "<group>"; };
 		1988CBEE1DC940D300AA8A8F /* BootloaderManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootloaderManager.swift; path = LevelIOSSdk/BootloaderManager.swift; sourceTree = "<group>"; };
 		1988CBEF1DC940D300AA8A8F /* DeviceClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceClient.swift; path = LevelIOSSdk/DeviceClient.swift; sourceTree = "<group>"; };
@@ -254,6 +264,8 @@
 				1988CC541DC9431700AA8A8F /* Step.swift */,
 				1988CC561DC9476C00AA8A8F /* TimePacket.swift */,
 				1988CC581DC949DE00AA8A8F /* TransmitControlData.swift */,
+				19488F761DCC0CAB00C2B531 /* ReporterConfig.swift */,
+				19488F781DCD0F1600C2B531 /* NukeRecordsPacket.swift */,
 			);
 			name = model;
 			sourceTree = "<group>";
@@ -271,6 +283,8 @@
 				1988CC0D1DC9413D00AA8A8F /* DeviceCommand.swift */,
 				1988CC0E1DC9413D00AA8A8F /* IndependentVariableDescription.swift */,
 				1988CC0F1DC9413D00AA8A8F /* StateMachine.swift */,
+				19488F741DCC0C7A00C2B531 /* ReporterType.swift */,
+				19488F7C1DCD4F4C00C2B531 /* ReporterError.swift */,
 			);
 			name = constants;
 			sourceTree = "<group>";
@@ -302,6 +316,7 @@
 				1988CC431DC941C700AA8A8F /* TimeParser.swift */,
 				1988CC441DC941C700AA8A8F /* TransmitControlParser.swift */,
 				1988CC451DC941C700AA8A8F /* UserUuidParser.swift */,
+				19488F7A1DCD105600C2B531 /* NukePacketParser.swift */,
 			);
 			name = strategy;
 			sourceTree = "<group>";
@@ -676,6 +691,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1988CC351DC9418F00AA8A8F /* RecordData.swift in Sources */,
+				19488F771DCC0CAB00C2B531 /* ReporterConfig.swift in Sources */,
 				1988CC341DC9418F00AA8A8F /* LockPacket.swift in Sources */,
 				1988CBF41DC940D300AA8A8F /* DeviceClient.swift in Sources */,
 				1988CC511DC941C700AA8A8F /* TimeParser.swift in Sources */,
@@ -685,6 +701,7 @@
 				1988CC171DC9413D00AA8A8F /* DeviceCommand.swift in Sources */,
 				1988CC111DC9413D00AA8A8F /* BleServices.swift in Sources */,
 				1988CBFF1DC9411700AA8A8F /* AccelFilt.swift in Sources */,
+				19488F751DCC0C7A00C2B531 /* ReporterType.swift in Sources */,
 				1988CC101DC9413D00AA8A8F /* BleCharacteristics.swift in Sources */,
 				1988CC011DC9411700AA8A8F /* BatteryState.swift in Sources */,
 				1988CC321DC9418F00AA8A8F /* LevelModel.swift in Sources */,
@@ -704,6 +721,7 @@
 				1988CBF21DC940D300AA8A8F /* BleManager.swift in Sources */,
 				1988CC481DC941C700AA8A8F /* DataPacketParser.swift in Sources */,
 				1988CC181DC9413D00AA8A8F /* IndependentVariableDescription.swift in Sources */,
+				19488F7D1DCD4F4C00C2B531 /* ReporterError.swift in Sources */,
 				19B644801DC3CA7F00006C41 /* AppDelegate.swift in Sources */,
 				1988CC201DC9415300AA8A8F /* DeviceUserUuid.swift in Sources */,
 				1988CC591DC949DE00AA8A8F /* TransmitControlData.swift in Sources */,
@@ -711,6 +729,7 @@
 				1988CC1F1DC9415300AA8A8F /* DeleteBondPacket.swift in Sources */,
 				1988CC191DC9413D00AA8A8F /* StateMachine.swift in Sources */,
 				1988CC461DC941C700AA8A8F /* CodeParser.swift in Sources */,
+				19488F7B1DCD105600C2B531 /* NukePacketParser.swift in Sources */,
 				1988CC491DC941C700AA8A8F /* DeleteBondParser.swift in Sources */,
 				1988CC551DC9431700AA8A8F /* Step.swift in Sources */,
 				1988CC521DC941C700AA8A8F /* TransmitControlParser.swift in Sources */,
@@ -720,6 +739,7 @@
 				1988CC331DC9418F00AA8A8F /* LevelUser.swift in Sources */,
 				1988CC281DC9418200AA8A8F /* LeastSquaresExponentialFit.swift in Sources */,
 				1988CC301DC9418F00AA8A8F /* LastLocation.swift in Sources */,
+				19488F791DCD0F1600C2B531 /* NukeRecordsPacket.swift in Sources */,
 				1988CC4B1DC941C700AA8A8F /* LockParser.swift in Sources */,
 				1988CC211DC9415300AA8A8F /* Frame.swift in Sources */,
 				1988CC4A1DC941C700AA8A8F /* FrameParser.swift in Sources */,

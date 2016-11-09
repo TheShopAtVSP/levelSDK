@@ -10,17 +10,14 @@ import Foundation
 
 enum DeviceLifecycle: String {
     case QueryLock, SendLedCode1, SendLedCode2, SendLedCode3, SendLedCode4, QueryTime,
-        SetTime, QueryReportControl, QueryReporter0, QueryReporter1, QueryReporter2, DisableReporters, QueryStoredData,
-        RetrieveData, RetrievingData, SetupReporter0, SetupReporter1, SetupReporter2, EnableReporters, EnsureTransmitControlOn, Done, Unknown
+        SetTime, QueryReportControl, QueryReporter0, QueryReporter1, QueryReporter2, Done, Unknown
     
     func getCommand() -> DeviceCommand {
         switch self {
         case .QueryTime: return DeviceCommand.TimeRD
         case .SetTime: return DeviceCommand.TimeWR
-        case .QueryReportControl, .EnableReporters, .DisableReporters: return DeviceCommand.ReportControl
-        case .QueryReporter0, .QueryReporter1, .QueryReporter2, .SetupReporter0, .SetupReporter1, .SetupReporter2: return DeviceCommand.ReporterAttributes
-        case .QueryStoredData, .RetrieveData, .EnsureTransmitControlOn: return DeviceCommand.TransmitControl
-        case .RetrievingData: return DeviceCommand.Unknown
+        case .QueryReportControl: return DeviceCommand.ReportControl
+        case .QueryReporter0, .QueryReporter1, .QueryReporter2: return DeviceCommand.ReporterAttributes
         case .QueryLock: return DeviceCommand.LockRD
         default: return DeviceCommand.Unknown
         }
@@ -30,26 +27,11 @@ enum DeviceLifecycle: String {
         switch self {
         case .SetTime:
             return BitsHelper.convertTo4Bytes(time: NSDate().timeIntervalSince1970)
-        case .DisableReporters, .QueryReporter0:
+        case .QueryReporter0:
             let bytes: [UInt8] = [0]
             return bytes
-        case .RetrieveData, .QueryReporter1, .EnsureTransmitControlOn:
+        case .QueryReporter1:
             let bytes: [UInt8] = [1]
-            return bytes
-        case .EnableReporters:
-            let bytes: [UInt8] = [7]
-            return bytes
-        case .SetupReporter0:
-            let bytes: [UInt8] = [0, UInt8(IndependentVariableDescription.Seconds.rawValue), 15, UInt8(DependentVariableDescription.StepPerTime.rawValue),
-                                  UInt8(DependentDataType.UInt8.rawValue), UInt8(DependentDataScale.OneToOneBit.rawValue), 0, 4, 0, 0, 0]
-            return bytes
-        case .SetupReporter1:
-            let bytes: [UInt8] = [1, UInt8(IndependentVariableDescription.OnChange.rawValue), 1, UInt8(DependentVariableDescription.BatteryPercentRemaining.rawValue),
-                                  UInt8(DependentDataType.Int24.rawValue), UInt8(DependentDataScale.OneToOneBit.rawValue), 0, 1, 0, 0, 0]
-            return bytes
-        case .SetupReporter2:
-            let bytes: [UInt8] = [2, UInt8(IndependentVariableDescription.Seconds.rawValue), 5, UInt8(DependentVariableDescription.AccelerometerFILT.rawValue),
-                                  UInt8(DependentDataType.Int16.rawValue), UInt8(DependentDataScale.PlusMinus1GToDataSize.rawValue), 0, 24, 0, 0, 0]
             return bytes
         case .QueryReporter2:
             let bytes: [UInt8] = [2]
@@ -74,22 +56,6 @@ enum DeviceLifecycle: String {
             return .GotReporter1Attriburtes
         case .QueryReporter2:
             return .GotReporter2Attriburtes
-        case .DisableReporters:
-            return .ReportersDisabled
-        case .QueryStoredData:
-            return .GotTransmitControl
-        case .RetrieveData, .EnsureTransmitControlOn:
-            return .TurnedTransmitControlOn
-        case .RetrievingData:
-            return .GotData
-        case .SetupReporter0:
-            return .Reporter0AttributesSet
-        case .SetupReporter1:
-            return .Reporter1AttributesSet
-        case .SetupReporter2:
-            return .Reporter2AttributesSet
-        case .EnableReporters:
-            return .ReporterEnabled
         default:
             return .Unknown
         }
@@ -135,17 +101,7 @@ class DeviceStateMachine {
         stateMachine.addTransition(transition: .GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
         stateMachine.addTransition(transition: .GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
         stateMachine.addTransition(transition: .GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
-        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
-        stateMachine.addTransition(transition: .ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
-        stateMachine.addTransition(transition: .GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
-        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
-        stateMachine.addTransition(transition: .GotData, from: .RetrievingData, to: .SetupReporter0)
-        stateMachine.addTransition(transition: .Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
-        stateMachine.addTransition(transition: .Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
-        stateMachine.addTransition(transition: .Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
-        stateMachine.addTransition(transition: .ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
-        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
-        stateMachine.addTransition(transition: .Disconnected, from: .Done, to: .QueryTime)
+        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .Done)
     }
     
     func processResult(data: DataPacket) {
@@ -172,15 +128,6 @@ class DeviceStateMachine {
             debugPrint("led code received, moving on")
             _ = stateMachine.advance(transition: stateMachine.state.getTransition())
             return
-        }
-        
-        if stateMachine.state == DeviceLifecycle.RetrievingData {
-            recordsDownloaded += 1
-            
-            if recordsDownloaded < totalRecordsToDownload {
-                debugPrint("downloading data: \(recordsDownloaded) \(totalRecordsToDownload)")
-                return
-            }
         }
         
         if stateMachine.state == DeviceLifecycle.QueryTime && data is TimePacket {
@@ -232,70 +179,11 @@ class DeviceStateMachine {
             }
         }
         
-        if stateMachine.state == DeviceLifecycle.QueryStoredData {
-            // check to avoid crash
-          guard let transmitControl = data as? TransmitControlData else {
-            debugPrint("can't convert data to TransmitControlData")
-            return
-          }
-          totalRecordsToDownload = transmitControl.totalRecordCount
-          debugPrint("records to download = \(totalRecordsToDownload)")
-
-        }
-      
-        if stateMachine.state == DeviceLifecycle.RetrieveData {
-            debugPrint("transmit control is on")
-            transmitControlOn = true
-        }
-        
         _ = stateMachine.advance(transition: stateMachine.state.getTransition())
         
         if stateMachine.state == DeviceLifecycle.SetTime && timeIsCorrect {
             debugPrint("time is correct next state please")
             _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.DisableReporters && ((reporter0Right && reporter1Right && reporter2Right) || data.reportControl == 0) {
-            debugPrint("reporters are right or already disabled, next!")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.RetrieveData && totalRecordsToDownload == 0 {
-            debugPrint("no data to download next!")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.SetupReporter0 && reporter0Right {
-            debugPrint("no need to setup reporter 0")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.SetupReporter1 && reporter1Right {
-            debugPrint("no need to setup reporter 1")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.SetupReporter2 && reporter2Right {
-            debugPrint("no need to setup reporter 2")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.EnableReporters && reporter0On && reporter1On && reporter2On {
-            debugPrint("reporters are all enabled next")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.EnsureTransmitControlOn && transmitControlOn {
-            debugPrint("trasmit control is already on! next")
-            _ = stateMachine.advance(transition: stateMachine.state.getTransition())
-        }
-        
-        if stateMachine.state == DeviceLifecycle.DisableReporters {
-            debugPrint("Reporters might be enabled, but disabling")
-            reporter0On = false
-            reporter1On = false
-            reporter2On = false
         }
         
         debugPrint("state on exit of processResult is \(stateMachine.state)")
@@ -319,18 +207,7 @@ class DeviceStateMachine {
         stateMachine.addTransition(transition: .GotReporterControl, from: .QueryReportControl, to: .QueryReporter0)
         stateMachine.addTransition(transition: .GotReporter0Attriburtes, from: .QueryReporter0, to: .QueryReporter1)
         stateMachine.addTransition(transition: .GotReporter1Attriburtes, from: .QueryReporter1, to: .QueryReporter2)
-        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .DisableReporters)
-        stateMachine.addTransition(transition: .ReportersDisabled, from: .DisableReporters, to: .QueryStoredData)
-        stateMachine.addTransition(transition: .GotTransmitControl, from: .QueryStoredData, to: .RetrieveData)
-        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .RetrieveData, to: .RetrievingData)
-        stateMachine.addTransition(transition: .GotData, from: .RetrievingData, to: .SetupReporter0)
-        stateMachine.addTransition(transition: .Reporter0AttributesSet, from: .SetupReporter0, to: .SetupReporter1)
-        stateMachine.addTransition(transition: .Reporter1AttributesSet, from: .SetupReporter1, to: .SetupReporter2)
-        stateMachine.addTransition(transition: .Reporter2AttributesSet, from: .SetupReporter2, to: .EnableReporters)
-        stateMachine.addTransition(transition: .ReporterEnabled, from: .EnableReporters, to: .EnsureTransmitControlOn)
-        stateMachine.addTransition(transition: .TurnedTransmitControlOn, from: .EnsureTransmitControlOn, to: .Done)
-        stateMachine.addTransition(transition: .Disconnected, from: .Done, to: .QueryTime)
-
+        stateMachine.addTransition(transition: .GotReporter2Attriburtes, from: .QueryReporter2, to: .Done)
     }
     
     func getState() -> DeviceLifecycle {

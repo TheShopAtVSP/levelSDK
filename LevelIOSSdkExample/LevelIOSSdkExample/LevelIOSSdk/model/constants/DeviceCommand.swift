@@ -28,5 +28,6 @@ enum DeviceCommand: Int {
     case FrameWR = 15
     case CodeWR = 17
     case DeleteBond = 18 //send 0x22 as payload
+    case NukeRecords = 19
     case LockRD = 20
 }

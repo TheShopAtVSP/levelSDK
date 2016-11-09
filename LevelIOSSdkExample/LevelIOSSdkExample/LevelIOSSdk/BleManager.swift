@@ -12,8 +12,8 @@ import CoreLocation
 
 enum ClientMessages {
     case BluetoothNotAvailable, BluetoothNotOn, InputLedCode, LedCodeAccepted, LedCodeFailed, LedCodeDone, LedCodeNotNeeded, DeviceReady,
-        BootloaderFinished, LastUserLocation, Step, BatteryReport, MotionData, BatteryLevel, BatteryState, Firmware, Bootloader, Frame, DeviceDisconnect,
-        BootloaderMessage, BondError, ConnectionTimeout
+        BootloaderFinished, LastUserLocation, Data, BatteryLevel, BatteryState, Firmware, Bootloader, Frame, DeviceDisconnect,
+        BootloaderMessage, BondError, ConnectionTimeout, QueryReporter, ReporterSetupComplete, ReporterSetupFailed, EnabledReporters
 }
 
 enum DefaultKeys: String {
@@ -40,7 +40,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     private var characteristicMap: [BleCharacteristics:CBCharacteristic] = [BleCharacteristics:CBCharacteristic]()
     private var commandQueue: [BleCommand]
     private var sentCommand: BleCommand? = nil
-    private var queueRunning: Bool = false
+    private var queueRunning: Bool = false, reporterQuery = false
     private var packetParserManager: PacketParserManager
     private var stateMachine: DeviceStateMachine
     private var connected: Bool = false, keySent = false, userIsActive = false, pairing = false, deviceReady = false, activeTimeSet = false
@@ -70,6 +70,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     var locationManager: CLLocationManager = CLLocationManager()
     var counter: Int = 1
     static var currentLocation: CLLocation?
+    var enabledReporters: [ReporterType]
+    var currentReporters: [ReportAttributes]
 
     override init() {
 
@@ -79,6 +81,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         self.commandQueue = [BleCommand]()
         self.packetParserManager = PacketParserManager()
         self.stateMachine = DeviceStateMachine()
+        self.enabledReporters = [ReporterType]()
+        self.currentReporters = [ReportAttributes]()
 
         super.init()
 
@@ -192,12 +196,6 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         resetDeviceKey()
     }
 
-    func setUser(user: LevelUser) {
-        debugPrint("BleManager setUser")
-        self.user = user
-        self.calculationHelper = CalculationHelper(user: user)
-    }
-
     func getBatteryLevel() {
         if deviceReady {
             addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryLevel))
@@ -209,43 +207,81 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
             addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BatteryState))
         }
     }
-
-    func getFirmwareVersion() {
-        if deviceReady {
-            addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.FirmwareVersion))
+    
+    func queryReporter(reporter: ReporterType) {
+        reporterQuery = true
+        executeCommand(command: DeviceCommand.ReporterAttributes, packet: ReportAttributes(reporter: reporter.rawValue))
+    }
+    
+    func configureReporter(config: ReporterConfig) {
+        let attrs: ReportAttributes = ReportAttributes(config: config)
+        
+        executeCommand(command: DeviceCommand.ReporterAttributes, packet: attrs)
+    }
+    
+    func enableReporter(reporter: ReporterType) {
+        if !self.enabledReporters.contains(reporter) {
+            executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: true)))
         }
     }
-  
-    func getBootloaderVersion() {
-      if deviceReady {
-        addCommand(command: BleCommand(readWrite: .Read, charac: BleCharacteristics.BootloaderVersion))
-      }
-    }
-  
-    func setTransmitControlToOn() {
-      if deviceReady {
-        executeCommand(command: DeviceCommand.TransmitControl, packet: CodePacket(code: 1))
-      }
-    }
-
-    func getFrameInfo() {
-        if deviceReady {
-            executeCommand(command: DeviceCommand.FrameRD, packet: nil)
+    
+    func disableReporter(reporter: ReporterType) {
+        if self.enabledReporters.contains(reporter) {
+            executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: false)))
         }
     }
-
-    func startBootloader(firmwareFile: NSURL, delegate: BootloaderDelegate) {
-        //TODO reboot device
-        var b: [UInt8] = [UInt8]()
-        b.append(0xEA)
-        self.reboot = true
-        debugPrint("rebooting device into DFU!!")
-        broadcastUpdate(message: .BootloaderMessage, thing: "Writing 0xEA to Battery Level Char" as NSObject)
-        addCommand(command: BleCommand(readWrite: .Write, charac: .BatteryLevel, bytes: b))
-
-        self.firmware = firmwareFile
-        self.clientBootloaderDelegate = delegate
-        self.bootloaderManager = BootloaderManager(delegate: self)
+    
+    func pauseData() {
+        executeCommand(command: DeviceCommand.TransmitControl, packet: TransmitControlData(writeData: 0x00))
+    }
+    
+    func enableData() {
+        executeCommand(command: DeviceCommand.TransmitControl, packet: TransmitControlData(writeData: 0x01))
+    }
+    
+    func deleteAllData() {
+        executeCommand(command: DeviceCommand.NukeRecords, packet: NukeRecordsPacket(payload: 0))
+    }
+    
+    func calcEnableReporter(reporter: ReporterType, enable: Bool) -> Int {
+        var thing = 0;
+        for type in self.enabledReporters {
+            switch( type ) {
+            case .Steps:
+                thing |= 1
+            case .Gyro:
+                thing |= 2
+            case .Accel:
+                thing |= 4
+            default:
+                NSLog("default thing thinger found")
+            }
+        }
+        
+        switch( reporter ) {
+        case .Steps:
+            if enable {
+                thing |= 1
+            } else {
+                thing &= 1
+            }
+        case .Gyro:
+            if enable {
+                thing |= 2
+            } else {
+                thing &= 2
+            }
+        case .Accel:
+            if enable {
+                thing |= 4
+            } else {
+                thing &= 4
+            }
+        default:
+            NSLog("default thing thingerer found")
+        }
+        
+        return thing
     }
 
     func isBlinkToLink() -> Bool {
@@ -339,14 +375,9 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         if !foundDevices.isEmpty {
             var values = foundDevices.values.sorted(by: {$0.rssi > $1.rssi})
-//            self.device = nil
-//            if( self.device == nil ) {
-
                 debugPrint("connecting to \(self.device?.name) -- \(self.device?.identifier)")
                 connectionTries = connectionTries % values.count
                 connectToDevice(bleDevice: values[connectionTries].device)
-                connectionTries += 1
-//            }
         } else {
           connectTimerExpired()
 //          self.broadcastUpdate
@@ -524,11 +555,6 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
         reset()
 
-        if !wannaBeActiveSteps.isEmpty {
-            for step in wannaBeActiveSteps {
-                broadcastUpdate(message: .Step, thing: step)
-            }
-        }
         debugPrint("will broadcast location")
         if user != nil {
           if let location = BleManager.currentLocation {
@@ -867,7 +893,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     record.timestamp += stateMachine.timeDiff
                 }
 
-                parseRecord(record: record)
+                broadcastUpdate(message: .Data, thing: record)
             }
 
             if stateMachine.getState() == DeviceLifecycle.SendLedCode4 && dataPacket is CodePacket {
@@ -914,130 +940,41 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     broadcastUpdate(message: ClientMessages.DeviceReady)
 
                 }
-            }
-
-            if dataPacket is Frame {
-                broadcastUpdate(message: .Frame, thing: dataPacket!)
-            }
-        }
-    }
-
-    func parseRecord(record: RecordData) {
-        let timezone = NSTimeZone.local.identifier
-        switch record.reporter {
-        case 0:
-            debugPrint("Steps!!")
-
-            var total: Int = 0
-            var totalDistance: Double = 0
-
-            for b in record.data {
-                total += Int(b)
-
-                if let helper = self.calculationHelper {
-                    totalDistance += helper.calculateDistanceInMiles(stepCount: Int(b))
-                }
-            }
-            
-            // TODO: TimeAgeddon: recordId, deviceTimestamp and originalTimestamo added here
-            let step: Step = Step(recordId: Int64(record.id), steps: total, timestamp: (record.timestamp*1000), deviceTimestamp: stateMachine.getDeviceTime(), originalTimestamp: record.originalTimestamp, timezone: timezone)
-
-            if let helper = self.calculationHelper {
-                debugPrint("calculationHelper is set!!!")
-                step.mets = helper.calculateMets(stepTotal: total)
-                step.activeBurn = helper.calculateActiveBurn(stepTotal: total)
-                step.distance = totalDistance
-
-                if step.mets > 1.38 {
-                    debugPrint("active Step!!!")
-                    step.activeTime = 1
-                    userIsActive = true
-                    inactiveCount = 0
-
-                    if !wannaBeActiveSteps.isEmpty {
-                        debugPrint("active so draining active steps")
-                        self.activeTimeTimer?.invalidate()
-                        activeTimeSet = false
-                        let active: Bool = wannaBeActiveSteps.count < 3
-
-                        for dubstep in wannaBeActiveSteps {
-                            if active {
-                                debugPrint("setting active steps to active")
-                                dubstep.activeTime = 1
-                            }
-
-                            broadcastUpdate(message: .Step, thing: dubstep)
-                        }
-
-                        wannaBeActiveSteps = [Step]()
-                    }
-
-                    debugPrint("broadcasting current active step")
-                    broadcastUpdate(message: .Step, thing: step)
-                } else if userIsActive || inactiveCount > 0 {
-                    debugPrint("inactive Step!!!")
-
-                    if inactiveCount <= 3 {
-                        wannaBeActiveSteps.append(step)
+            } else if stateMachine.getState() == DeviceLifecycle.Done {
+                if dataPacket is ReportAttributes {
+                    if reporterQuery {
+                        let builder: ReporterConfigBuilder = ReporterConfigBuilder()
+                        builder.reportAttributes(attrs: dataPacket as! ReportAttributes)
+                        broadcastUpdate(message: .QueryReporter, thing: builder.build())
+                        reporterQuery = false
                     } else {
-                        broadcastUpdate(message: .Step, thing: step)
+                        if dataPacket?.subError != ReporterError.NoError {
+                            broadcastUpdate(message: .ReporterSetupFailed, thing: dataPacket!)
+                        } else {
+                            broadcastUpdate(message: .ReporterSetupComplete)
+                        }
                     }
-
-                    if userIsActive && !activeTimeSet {
-                        debugPrint("!!! setting timer")
-                        activeTimeSet = true
-                        setActiveTimeTimer()
+                } else if dataPacket is TransmitControlData {
+                    
+                } else if dataPacket is NukeRecordsPacket {
+                    
+                } else if dataPacket != nil {
+                    let reporterControl = dataPacket?.reportControl
+                    var activeReporters: [ReporterType] = [ReporterType]()
+                    
+                    for type in ReporterType.cases() {
+                        if (reporterControl! & type.rawValue) > 0 {
+                            activeReporters.append(type)
+                        }
                     }
-
-                    userIsActive = false
-                    inactiveCount += 1
-                } else {
-                    broadcastUpdate(message: .Step, thing: step)
+                    
+                    self.enabledReporters = activeReporters
+                    
+                    if !activeReporters.isEmpty {
+                        broadcastUpdate(message: .EnabledReporters, thing: activeReporters as NSObject)
+                    }
                 }
-            } else {
-                debugPrint("calculationHelper is NOT set")
-                broadcastUpdate(message: .Step, thing: step)
             }
-        case 1:
-            var bytes = record.data
-            broadcastUpdate(message: .BatteryReport, thing: BatteryReport(recordId: Int64(record.id), percent: Int(bytes[0]), volt: Int(BitsHelper.convertToUInt16(msb: bytes[2], lsb: bytes[1])), timestamp: record.timestamp, timezone: timezone))
-        case 2:
-            var counter: Int = 0
-            var bytes: [UInt8] = record.data
-
-            for i in stride(from: 0, to: bytes.count, by: 2) {
-                let reading = BitsHelper.convertToUInt16(msb: bytes[i+1], lsb: bytes[i])
-                let time = record.timestamp + Double(counter * 5)
-                
-                broadcastUpdate(message: .MotionData, thing: AccelFilt(recordId: Int64(record.id), timestamp: time, timezone: timezone, reading: Int(reading)))
-                counter += 1
-            }
-        default:
-            debugPrint("OH NO!, what reporter is this \(record.reporter)")
-        }
-    }
-
-    func setActiveTimeTimer() {
-        debugPrint("setActiveTimer called")
-        let runLoop: RunLoop = RunLoop.main
-        let fireDate: NSDate = NSDate(timeIntervalSinceNow: 190.0)
-        self.activeTimeTimer = Timer(fireAt: fireDate as Date, interval: 0.1, target: self, selector: #selector(activeTimeTimerExpired), userInfo: nil, repeats: false)
-
-        //self.activeTimeTimer = NSTimer.scheduledTimerWithTimeInterval(10.0, target: self, selector: #selector(activeTimeTimerExpired), userInfo: nil, repeats: false)
-
-        runLoop.add(self.activeTimeTimer!, forMode: RunLoopMode.commonModes)
-    }
-
-    func activeTimeTimerExpired() {
-        debugPrint("activeTimeTimerExpired")
-        activeTimeSet = false
-        if !wannaBeActiveSteps.isEmpty {
-            debugPrint("draining wannaBeActiveSteps")
-            for step in wannaBeActiveSteps {
-                broadcastUpdate(message: .Step, thing: step)
-            }
-
-            wannaBeActiveSteps = [Step]()
         }
     }
 
@@ -1197,6 +1134,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     client.onBondError()
                 case .ConnectionTimeout:
                     client.onConnectionTimeout()
+                case .ReporterSetupComplete:
+                    client.onSetUpComplete()
                 default:
                     debugPrint("OH NO!!! bad client message")
                 }
@@ -1209,24 +1148,16 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         if !clients.isEmpty {
             for client: DeviceObserverCallbacks in clients.values {
                 switch message {
-                case .Step:
-                    client.onStep(step: thing as! Step)
-                case .BatteryReport:
-                    client.onBatteryReport(batteryReport: thing as! BatteryReport)
-                case .MotionData:
-                    client.onMotionData(accelFilt: thing as! AccelFilt)
+                case .Data:
+                    client.onData(data: thing as! RecordData)
                 case .BatteryLevel:
                     client.onBatteryLevel(level: thing as! Int)
                 case .BatteryState:
                     client.onBatteryState(state: BatteryState(rawValue: thing as! Int)!)
-                case .Firmware:
-                    client.onFirmwareVersion(firmwareVersion: thing as! String)
-                case .Bootloader:
-                  client.onBootloaderVersion(bootloaderVersion: thing as! String)
-                case .Frame:
-                    client.onFrame(frame: thing as! Frame)
-                case .LastUserLocation:
-                    client.onLastUserLocation(location: thing as! LastLocation)
+                case .QueryReporter:
+                    client.onReporterQueried(config: thing as! ReporterConfig)
+                case .ReporterSetupFailed:
+                    client.onSetUpFailed(error: (thing as! DataPacket).subError)
                 default:
                     debugPrint("OH NO!!! bad client message")
                 }

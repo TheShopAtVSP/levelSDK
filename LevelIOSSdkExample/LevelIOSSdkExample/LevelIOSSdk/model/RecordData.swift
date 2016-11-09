@@ -11,7 +11,7 @@ import Foundation
 let HEADER_LENGTH = 8
 
 class RecordData: TimePacket {
-    var data: [UInt8]
+    var data: [Int16]
     var currenBytes: Int = 0
     var totalBytes: Int = 0
     var originalTimestamp: Double = 0
@@ -19,7 +19,7 @@ class RecordData: TimePacket {
     init(bytes: [UInt8]) {
         self.totalBytes = BitsHelper.convertTo12BitInt(bytes: [UInt8](bytes[4...5])) - HEADER_LENGTH
         //debugPrint("RecordData - \(totalBytes)")
-        self.data = [UInt8](repeating: 0, count: self.totalBytes)
+        self.data = [Int16](repeating: 0, count: self.totalBytes)
         
         super.init()
         
@@ -29,9 +29,9 @@ class RecordData: TimePacket {
         self.originalTimestamp = self.timestamp * 1000
         
         if self.totalBytes > 0 {
-            for i in HEADER_LENGTH + 2...(bytes.count-1) {
+            for i in stride(from: HEADER_LENGTH + 2, to: (bytes.count-1), by:2) {
                 //debugPrint("why? \(i) -- \(currenBytes)")
-                data[currenBytes] = bytes[i]
+                data[currenBytes] = BitsHelper.convertToInt16(msb: Int8(bytes[i]), lsb: Int8(bytes[i+1]))
                 currenBytes += 1
                 
                 if isFinished() {
@@ -42,9 +42,9 @@ class RecordData: TimePacket {
     }
     
     func continueRecord(bytes: [UInt8]) -> RecordData {
-        for i in 2...(bytes.count - 1) {
+        for i in stride(from: 2, to: (bytes.count - 1), by: 2) {
             //debugPrint("what what? \(i) -- \(currenBytes)")
-            data[currenBytes] = bytes[i]
+            data[currenBytes] = BitsHelper.convertToInt16(msb: Int8(bytes[i]), lsb: Int8(bytes[i+1]))
             currenBytes+=1
             
             if isFinished() {
@@ -56,7 +56,7 @@ class RecordData: TimePacket {
     }
     
     func isFinished() -> Bool {
-        return self.currenBytes == self.totalBytes
+        return (self.currenBytes * 2) == self.totalBytes
     }
     
 }

@@ -9,7 +9,7 @@
 import Foundation
 
 enum NackError: Int {
-    case PacketSeqError = 2, PacketTypeError = 5, DataLengthError = 6, AttributeError = 9
+    case PacketSeqError = 2, PacketTypeError = 5, DataLengthError = 6, AttributeError = 9, None = 10
 }
 
 class NackParser: DataPacketParserProtocol {
@@ -18,8 +18,15 @@ class NackParser: DataPacketParserProtocol {
             //TODO find out how exceptions work
         }
         
+        let packet: DataPacket = DataPacket()
+        
         if let error = NackError(rawValue: Int(bytes[2])) {
-            switch error {
+            packet.nackError = error
+            
+            if error == .AttributeError && bytes.count >= 5 {
+                packet.subError = ReporterError(rawValue: Int(bytes[4]))!
+            }
+            /*switch error {
             case NackError.PacketSeqError:
                 break
             case .PacketTypeError:
@@ -28,9 +35,9 @@ class NackParser: DataPacketParserProtocol {
                 break
             case .AttributeError:
                 break
-            }
+            }*/
         }
         
-        return DataPacket()
+        return packet
     }
 }

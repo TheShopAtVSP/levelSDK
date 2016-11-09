@@ -20,6 +20,10 @@ class BitsHelper {
         return (UInt16(msb) << 8) + UInt16(lsb)
     }
     
+    class func convertToInt16(msb: Int8, lsb: Int8) -> Int16 {
+        return (Int16(msb) << 8) | Int16(lsb)
+    }
+    
     class func convertToUInt8(msb: UInt8, lsb: UInt8) -> UInt8 {
         return (msb << 4) + lsb
     }

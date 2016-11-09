@@ -1,5 +1,6 @@
 package com.theshopatvsp.levelandroidsdk.ble.model.response;
 
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import  com.theshopatvsp.levelandroidsdk.ble.helper.BitsHelper;
@@ -38,9 +39,10 @@ public class RecordData extends TimePacket {
         originalTimestamp = timestamp;
 
         Log.v(TAG, "new record total = " + totalBytes);
+        Log.v(TAG, "RECORDDATA TIMESTAMP = " + timestamp + "readable data: " + new Date(timestamp));
 
         if (totalBytes > 0) {
-            data = new int[totalBytes];
+            data = new int[totalBytes / 2];
 
             for( int i = HEADER_LEGTH + 2; i < packet.length; i+=2 ) {
                 data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i], packet[i + 1]);

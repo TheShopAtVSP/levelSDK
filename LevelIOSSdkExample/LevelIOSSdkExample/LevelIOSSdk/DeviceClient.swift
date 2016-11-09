@@ -17,18 +17,17 @@ protocol DeviceObserverCallbacks {
     func onLedCodeFailed()
     func onLedCodeNotNeeded()
     func onDeviceReady()
+    func onSetUpComplete()
+    func onSetUpFailed(error: ReporterError)
+    func onReporterQueried(config: ReporterConfig)
+    func onReportersEnabled(reporters: [ReporterType])
+    func onData(data: RecordData)
+    func onDataDeleted()
     func onConnectionTimeout()
     func onDisconnect()
     func onBondError()
-    func onLastUserLocation(location: LastLocation)
-    func onStep(step: Step)
-    func onBatteryReport(batteryReport: BatteryReport)
-    func onMotionData(accelFilt: AccelFilt)
     func onBatteryLevel(level: Int)
     func onBatteryState(state: BatteryState)
-    func onFirmwareVersion(firmwareVersion: String)
-    func onBootloaderVersion(bootloaderVersion: String)
-    func onFrame(frame: Frame)
 }
 
 class DeviceClient: NSObject {
@@ -74,19 +73,6 @@ class DeviceClient: NSObject {
         self.bleManager.deleteSavedKey()
     }
 
-    func setUser(user: LevelUser) {
-        debugPrint("deviceClient setUser")
-        self.bleManager.setUser(user: user)
-    }
-
-    func getFirmwareVersion() {
-        self.bleManager.getFirmwareVersion()
-    }
-  
-    func getBootloaderVersion() {
-      self.bleManager.getBootloaderVersion()
-    }
-
     func getBatteryLevel() {
         self.bleManager.getBatteryLevel()
     }
@@ -94,17 +80,32 @@ class DeviceClient: NSObject {
     func getBatteryState() {
         self.bleManager.getBatteryState()
     }
-  
-    func setTransmitControlToOn() {
-      self.bleManager.setTransmitControlToOn()
+    
+    func queryReporter(reporter: ReporterType) {
+        self.bleManager.queryReporter(reporter: reporter)
     }
-  
-    func getFrame() {
-        self.bleManager.getFrameInfo()
+    
+    func setUpReporter(config: ReporterConfig) {
+        self.bleManager.configureReporter(config: config)
     }
-
-    //TODO: what the fuck is a file in swift?
-    func startBootloader(firmwareFile: NSURL, delegate: BootloaderDelegate) {
-        self.bleManager.startBootloader(firmwareFile: firmwareFile, delegate: delegate)
+    
+    func enableReporter(reporter: ReporterType) {
+        self.bleManager.enableReporter(reporter: reporter)
+    }
+    
+    func disableReporter(reporter: ReporterType) {
+        self.bleManager.disableReporter(reporter: reporter)
+    }
+    
+    func pauseDataStream() {
+        self.bleManager.pauseData()
+    }
+    
+    func enableDataStream() {
+        self.bleManager.enableData()
+    }
+    
+    func deleteAllStoredData() {
+        self.bleManager.deleteAllData()
     }
 }
