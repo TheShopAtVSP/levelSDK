@@ -19,7 +19,7 @@ class RecordData: TimePacket {
     init(bytes: [UInt8]) {
         self.totalBytes = BitsHelper.convertTo12BitInt(bytes: [UInt8](bytes[4...5])) - HEADER_LENGTH
         //debugPrint("RecordData - \(totalBytes)")
-        self.data = [Int16](repeating: 0, count: self.totalBytes)
+        self.data = [Int16](repeating: 0, count: (self.totalBytes / 2))
         
         super.init()
         
@@ -30,8 +30,8 @@ class RecordData: TimePacket {
         
         if self.totalBytes > 0 {
             for i in stride(from: HEADER_LENGTH + 2, to: (bytes.count-1), by:2) {
-                //debugPrint("why? \(i) -- \(currenBytes)")
-                data[currenBytes] = BitsHelper.convertToInt16(msb: Int8(bytes[i]), lsb: Int8(bytes[i+1]))
+                debugPrint("why? \(i) -- \(currenBytes) == \(bytes.count)")
+                data[currenBytes] = BitsHelper.convertToInt16(msb: UInt8(bytes[i]), lsb: UInt8(bytes[i+1]))
                 currenBytes += 1
                 
                 if isFinished() {
@@ -44,7 +44,7 @@ class RecordData: TimePacket {
     func continueRecord(bytes: [UInt8]) -> RecordData {
         for i in stride(from: 2, to: (bytes.count - 1), by: 2) {
             //debugPrint("what what? \(i) -- \(currenBytes)")
-            data[currenBytes] = BitsHelper.convertToInt16(msb: Int8(bytes[i]), lsb: Int8(bytes[i+1]))
+            data[currenBytes] = BitsHelper.convertToInt16(msb: UInt8(bytes[i]), lsb: UInt8(bytes[i+1]))
             currenBytes+=1
             
             if isFinished() {

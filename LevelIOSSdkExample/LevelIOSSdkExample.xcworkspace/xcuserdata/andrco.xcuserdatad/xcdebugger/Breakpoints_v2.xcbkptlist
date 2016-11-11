@@ -105,29 +105,13 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "LevelIOSSdkExample/SecondViewController.swift"
-            timestampString = "499990242.588925"
+            filePath = "LevelIOSSdkExample/LevelIOSSdk/model/RecordData.swift"
+            timestampString = "500583413.24014"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "67"
-            endingLineNumber = "67"
-            landmarkName = "pickerView(_:titleForRow:forComponent:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LevelIOSSdkExample/SecondViewController.swift"
-            timestampString = "499990243.388776"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "66"
-            endingLineNumber = "66"
-            landmarkName = "pickerView(_:titleForRow:forComponent:)"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "init(bytes:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

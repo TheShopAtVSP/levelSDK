@@ -33,6 +33,9 @@ class DataPacket: NSObject {
     }
     
     func getPacket() -> [UInt8] {
-        return [UInt8]()
+        var bytes = [UInt8]()
+        bytes.append(UInt8(self.reportControl))
+        
+        return bytes
     }
 }

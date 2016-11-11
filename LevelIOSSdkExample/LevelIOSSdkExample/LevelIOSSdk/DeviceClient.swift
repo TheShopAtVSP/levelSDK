@@ -22,6 +22,7 @@ protocol DeviceObserverCallbacks {
     func onReporterQueried(config: ReporterConfig)
     func onReportersEnabled(reporters: [ReporterType])
     func onData(data: RecordData)
+    func onDataStreamEnabled(currentRecordCount: Int)
     func onDataDeleted()
     func onConnectionTimeout()
     func onDisconnect()
@@ -83,6 +84,10 @@ class DeviceClient: NSObject {
     
     func queryReporter(reporter: ReporterType) {
         self.bleManager.queryReporter(reporter: reporter)
+    }
+    
+    func queryEnabledReporters() {
+        self.bleManager.queryEnabledReporters()
     }
     
     func setUpReporter(config: ReporterConfig) {

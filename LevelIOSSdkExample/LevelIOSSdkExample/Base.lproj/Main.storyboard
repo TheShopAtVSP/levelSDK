@@ -97,14 +97,23 @@
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lQ5-Gf-P6I">
                                 <rect key="frame" x="50" y="15" width="51" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="stepsToggled:" destination="8rJ-Kc-sve" eventType="valueChanged" id="hjL-Cq-lzU"/>
+                                </connections>
                             </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8H0-YE-csq">
                                 <rect key="frame" x="263" y="15" width="51" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="gyroToggled:" destination="8rJ-Kc-sve" eventType="valueChanged" id="VXM-Cm-hAq"/>
+                                </connections>
                             </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vQU-ML-e8b">
                                 <rect key="frame" x="156" y="15" width="51" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="accelToggled:" destination="8rJ-Kc-sve" eventType="valueChanged" id="V5Q-Ys-FLC"/>
+                                </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Gyro:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XSO-Lu-uUy">
                                 <rect key="frame" x="213" y="20" width="42" height="21"/>
@@ -212,6 +221,9 @@
                                 <rect key="frame" x="16" y="403" width="83" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Enable Data"/>
+                                <connections>
+                                    <action selector="enableDataClicked:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="am9-eH-MAZ"/>
+                                </connections>
                             </button>
                             <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rCe-iH-rVF">
                                 <rect key="frame" x="0.0" y="248" width="140" height="112"/>
@@ -225,11 +237,17 @@
                                 <rect key="frame" x="113" y="358" width="71" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Do a thing"/>
+                                <connections>
+                                    <action selector="doAThingClicked:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="SpX-h1-Azg"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="70W-ij-YKw">
                                 <rect key="frame" x="113" y="403" width="102" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Delete All Data"/>
+                                <connections>
+                                    <action selector="deleteAllDataClicked:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="7T2-i4-nMc"/>
+                                </connections>
                             </button>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="5xF-TM-5wa">
                                 <rect key="frame" x="107" y="50" width="97" height="30"/>
@@ -252,6 +270,7 @@
                     <connections>
                         <outlet property="accelToggle" destination="vQU-ML-e8b" id="Fsy-IT-zRj"/>
                         <outlet property="actionSpinner" destination="iDu-gQ-De9" id="3Aj-GI-9yr"/>
+                        <outlet property="enableDataButton" destination="cmJ-4j-gai" id="5oO-Y8-8rQ"/>
                         <outlet property="gyroToggle" destination="8H0-YE-csq" id="OWn-Ap-dEx"/>
                         <outlet property="magToggle" destination="1YK-Fe-xvk" id="Y7W-sY-C5b"/>
                         <outlet property="maxRecordsText" destination="Lfc-Im-JKr" id="sJD-Nm-A2q"/>

@@ -71,7 +71,7 @@ class DeviceStateMachine {
     var stateMachine: StateMachine<DeviceLifecycle, DeviceTransition>
     var currentTransition: Int = 0
     var enabled: Bool = false
-    var reporter0Right: Bool = false, reporter1Right: Bool = false, reporter2Right: Bool = false
+    var reporter0Config: ReportAttributes? = nil, reporter1Config: ReportAttributes? = nil, reporter2Config: ReportAttributes? = nil
     var reporter0On: Bool = false, reporter1On: Bool = false, reporter2On: Bool = false
     var timeIsCorrect: Bool = false, transmitControlOn = false
     var timeDiff: Double = 0, deviceTime: Double = 0
@@ -144,19 +144,19 @@ class DeviceStateMachine {
             }
         }
         
-        if stateMachine.state == DeviceLifecycle.QueryReporter0 && expectedReport0Attributes.isEqual(data) {
+        if stateMachine.state == DeviceLifecycle.QueryReporter0 && data is ReportAttributes {
             debugPrint("reporter 0 is right")
-            reporter0Right = true
+            reporter0Config = data as? ReportAttributes
         }
         
-        if stateMachine.state == DeviceLifecycle.QueryReporter1 && expectedReport1Attributes.isEqual(data) {
+        if stateMachine.state == DeviceLifecycle.QueryReporter1 && data is ReportAttributes {
             debugPrint("reporter 1 is right")
-            reporter1Right = true
+            reporter1Config = data as? ReportAttributes
         }
         
-        if stateMachine.state == DeviceLifecycle.QueryReporter2 && expectedReport2Attributes.isEqual(data) {
+        if stateMachine.state == DeviceLifecycle.QueryReporter2 && data is ReportAttributes {
             debugPrint("reporter2 is right")
-            reporter2Right = true
+            reporter0Config = data as? ReportAttributes
         }
         
         if stateMachine.state == DeviceLifecycle.QueryReportControl {

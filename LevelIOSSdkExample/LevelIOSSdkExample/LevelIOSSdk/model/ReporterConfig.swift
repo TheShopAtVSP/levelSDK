@@ -29,14 +29,17 @@ class ReporterConfigBuilder {
     
     func step() {
         self.reporter = ReporterType.Steps
+        self.indVarDesc = IndependentVariableDescription.Seconds
     }
     
     func accel() {
         self.reporter = ReporterType.Accel
+        self.indVarDesc = IndependentVariableDescription.SamplingHz
     }
     
     func gyro() {
         self.reporter = ReporterType.Gyro
+        self.indVarDesc = IndependentVariableDescription.SamplingHz
     }
     
     func reportAttributes(attrs: ReportAttributes) {

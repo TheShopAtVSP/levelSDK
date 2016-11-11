@@ -104,39 +104,41 @@ class FirstViewController: UIViewController, DeviceObserverCallbacks {
     func onBondError() {
         debugPrint("callback: onBondError")
     }
-    func onLastUserLocation(location: LastLocation) {
-        debugPrint("callback: onLastUserLocation")
-    }
-    
-    func onStep(step: Step) {
-        debugPrint("callback: onStep")
-    }
-    
-    func onBatteryReport(batteryReport: BatteryReport) {
-        debugPrint("callback: onBatteryReport")
-    }
-    func onMotionData(accelFilt: AccelFilt) {
-        debugPrint("callback: onMotionData")
-    }
     
     func onBatteryLevel(level: Int) {
         debugPrint("callback: onBatteryLevel")
     }
+    
     func onBatteryState(state: BatteryState) {
         debugPrint("callback: onBatteryState")
     }
     
-    func onFirmwareVersion(firmwareVersion: String) {
-        debugPrint("callback: onFirmwareVersion")
+    func onSetUpComplete() {
+        debugPrint("callback: onSetUpComplete")
     }
     
-    func onBootloaderVersion(bootloaderVersion: String) {
-        debugPrint("callback: onBootloaderVersion")
+    func onSetUpFailed(error: ReporterError) {
+        debugPrint("callback: onSetUpFailed \(error)")
     }
     
-    func onFrame(frame: Frame) {
-        debugPrint("callback: onFrame")
+    func onReporterQueried(config: ReporterConfig) {
+        debugPrint("callback: onReporterQueried")
     }
-
+    
+    func onReportersEnabled(reporters: [ReporterType]) {
+        debugPrint("callback: onReportersEnabled")
+    }
+    
+    func onData(data: RecordData) {
+        debugPrint("callback: onData")
+    }
+    
+    func onDataStreamEnabled(currentRecordCount: Int) {
+        debugPrint("callback: onDataStreamEnabled: \(currentRecordCount)")
+    }
+    
+    func onDataDeleted() {
+        debugPrint("callback: onDataDeleted")
+    }
 }
 

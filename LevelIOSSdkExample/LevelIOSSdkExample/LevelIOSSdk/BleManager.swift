@@ -13,7 +13,7 @@ import CoreLocation
 enum ClientMessages {
     case BluetoothNotAvailable, BluetoothNotOn, InputLedCode, LedCodeAccepted, LedCodeFailed, LedCodeDone, LedCodeNotNeeded, DeviceReady,
         BootloaderFinished, LastUserLocation, Data, BatteryLevel, BatteryState, Firmware, Bootloader, Frame, DeviceDisconnect,
-        BootloaderMessage, BondError, ConnectionTimeout, QueryReporter, ReporterSetupComplete, ReporterSetupFailed, EnabledReporters
+        BootloaderMessage, BondError, ConnectionTimeout, QueryReporter, ReporterSetupComplete, ReporterSetupFailed, EnabledReporters, DataNuked, DataStreamEnabled
 }
 
 enum DefaultKeys: String {
@@ -43,7 +43,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     private var queueRunning: Bool = false, reporterQuery = false
     private var packetParserManager: PacketParserManager
     private var stateMachine: DeviceStateMachine
-    private var connected: Bool = false, keySent = false, userIsActive = false, pairing = false, deviceReady = false, activeTimeSet = false
+    private var connected: Bool = false, keySent = false, userIsActive = false, pairing = false, deviceReady = false, activeTimeSet = false, stepReporterDisabled = false
     private var wannaBeActiveSteps: [Step] = [Step]()
     private var inactiveCount: Int = 0
     private var disconnectRetries: Int = 0
@@ -59,10 +59,12 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
 
     private var user: LevelUser?
     private var calculationHelper: CalculationHelper?
+    private var blank: ReportAttributes = ReportAttributes(reporter: ReporterType.Steps.rawValue, indVarDesc: IndependentVariableDescription.Unitless, indVarScale: 0, depVarDesc: DependentVariableDescription.Unitless,
+                                                           depDataType: DependentDataType.Char, depDataScale: DependentDataScale.OneToOneBit, dataFieldsPerSample: 0, samplesPerRecord: 1, maxRecordsPerReport: 1)
 
     //bootloader stuff
     private var bootloaderManager: BootloaderManager?
-    private var reboot: Bool = false
+    private var reboot: Bool = false, enableDataStream = false
     private var firmware: NSURL?
     private var clientBootloaderDelegate: BootloaderDelegate?
 
@@ -213,6 +215,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
         executeCommand(command: DeviceCommand.ReporterAttributes, packet: ReportAttributes(reporter: reporter.rawValue))
     }
     
+    func queryEnabledReporters() {
+        executeCommand(command: DeviceCommand.ReportControl, packet: nil)
+    }
+    
     func configureReporter(config: ReporterConfig) {
         let attrs: ReportAttributes = ReportAttributes(config: config)
         
@@ -220,15 +226,15 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
     
     func enableReporter(reporter: ReporterType) {
-        if !self.enabledReporters.contains(reporter) {
-            executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: true)))
-        }
+        executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: true)))
     }
     
     func disableReporter(reporter: ReporterType) {
-        if self.enabledReporters.contains(reporter) {
-            executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: false)))
+        if reporter == ReporterType.Steps {
+            stepReporterDisabled = true
         }
+        
+        executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: calcEnableReporter(reporter: reporter, enable: false)))
     }
     
     func pauseData() {
@@ -236,6 +242,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     }
     
     func enableData() {
+        enableDataStream = true
         executeCommand(command: DeviceCommand.TransmitControl, packet: TransmitControlData(writeData: 0x01))
     }
     
@@ -246,39 +253,13 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
     func calcEnableReporter(reporter: ReporterType, enable: Bool) -> Int {
         var thing = 0;
         for type in self.enabledReporters {
-            switch( type ) {
-            case .Steps:
-                thing |= 1
-            case .Gyro:
-                thing |= 2
-            case .Accel:
-                thing |= 4
-            default:
-                NSLog("default thing thinger found")
+            if type != reporter {
+                thing |= type.getReportControl()
             }
         }
         
-        switch( reporter ) {
-        case .Steps:
-            if enable {
-                thing |= 1
-            } else {
-                thing &= 1
-            }
-        case .Gyro:
-            if enable {
-                thing |= 2
-            } else {
-                thing &= 2
-            }
-        case .Accel:
-            if enable {
-                thing |= 4
-            } else {
-                thing &= 4
-            }
-        default:
-            NSLog("default thing thingerer found")
+        if enable {
+            thing |= reporter.getReportControl()
         }
         
         return thing
@@ -894,6 +875,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 }
 
                 broadcastUpdate(message: .Data, thing: record)
+                return
             }
 
             if stateMachine.getState() == DeviceLifecycle.SendLedCode4 && dataPacket is CodePacket {
@@ -937,44 +919,90 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                 if stateMachine.getState() == .Done {
                     //executeCommand(.DeleteBond, packet: DeleteBondPacket())
                     deviceReady = true
+                    setUpStuff()
                     broadcastUpdate(message: ClientMessages.DeviceReady)
 
                 }
             } else if stateMachine.getState() == DeviceLifecycle.Done {
-                if dataPacket is ReportAttributes {
+                if dataPacket?.subError != ReporterError.NoError {
+                    broadcastUpdate(message: .ReporterSetupFailed, thing: dataPacket!)
+                } else if dataPacket is ReportAttributes {
                     if reporterQuery {
                         let builder: ReporterConfigBuilder = ReporterConfigBuilder()
                         builder.reportAttributes(attrs: dataPacket as! ReportAttributes)
                         broadcastUpdate(message: .QueryReporter, thing: builder.build())
                         reporterQuery = false
                     } else {
-                        if dataPacket?.subError != ReporterError.NoError {
-                            broadcastUpdate(message: .ReporterSetupFailed, thing: dataPacket!)
+                        let attrs = dataPacket as! ReportAttributes
+                        let reporter: ReporterType = ReporterType(rawValue: attrs.reporter)!
+                        
+                        var reportControl = 0
+                        
+                        if !stepReporterDisabled {
+                            for type in enabledReporters {
+                                reportControl |= type.getReportControl()
+                            }
+                            
+                            reportControl |= reporter.getReportControl()
+                            
+                            executeCommand(command: DeviceCommand.ReportControl, packet: DataPacket(reportControl: reportControl))
                         } else {
-                            broadcastUpdate(message: .ReporterSetupComplete)
+                            stepReporterDisabled = false;
                         }
+                        
+                        broadcastUpdate(message: .ReporterSetupComplete)
                     }
                 } else if dataPacket is TransmitControlData {
+                    let transmitControl: TransmitControlData = dataPacket as! TransmitControlData
+                    
+                    if enableDataStream {
+                        enableDataStream = false
+                        broadcastUpdate(message: .DataStreamEnabled, thing: transmitControl.totalRecordCount as NSObject)
+                    }
+                    
                     
                 } else if dataPacket is NukeRecordsPacket {
-                    
+                    broadcastUpdate(message: .DataNuked)
                 } else if dataPacket != nil {
                     let reporterControl = dataPacket?.reportControl
+                    
+                    if stepReporterDisabled {
+                        if (reporterControl! & 0x01) == 0 {
+                            executeCommand(command: DeviceCommand.ReporterAttributes, packet: blank)
+                        }
+                    }
+                    
                     var activeReporters: [ReporterType] = [ReporterType]()
                     
                     for type in ReporterType.cases() {
-                        if (reporterControl! & type.rawValue) > 0 {
+                        debugPrint("type \(type) = \(type.getReportControl()) wtf \(reporterControl! & type.getReportControl())")
+                        if (reporterControl! & type.getReportControl()) > 0 {
                             activeReporters.append(type)
                         }
                     }
                     
                     self.enabledReporters = activeReporters
                     
-                    if !activeReporters.isEmpty {
-                        broadcastUpdate(message: .EnabledReporters, thing: activeReporters as NSObject)
-                    }
+                    broadcastUpdate(message: .EnabledReporters, thing: activeReporters as NSObject)
+                
                 }
             }
+        }
+    }
+    
+    func setUpStuff() {
+        self.enabledReporters = [ReporterType]()
+        
+        if stateMachine.reporter0On {
+            self.enabledReporters.append(ReporterType.Steps)
+        }
+        
+        if stateMachine.reporter1On {
+            self.enabledReporters.append(ReporterType.Gyro)
+        }
+        
+        if stateMachine.reporter2On {
+            self.enabledReporters.append(ReporterType.Accel)
         }
     }
 
@@ -1136,6 +1164,8 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     client.onConnectionTimeout()
                 case .ReporterSetupComplete:
                     client.onSetUpComplete()
+                case .DataNuked:
+                    client.onDataDeleted()
                 default:
                     debugPrint("OH NO!!! bad client message")
                 }
@@ -1158,6 +1188,10 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLo
                     client.onReporterQueried(config: thing as! ReporterConfig)
                 case .ReporterSetupFailed:
                     client.onSetUpFailed(error: (thing as! DataPacket).subError)
+                case .EnabledReporters:
+                    client.onReportersEnabled(reporters: thing as! [ReporterType])
+                case .DataStreamEnabled:
+                    client.onDataStreamEnabled(currentRecordCount: thing as! Int)
                 default:
                     debugPrint("OH NO!!! bad client message")
                 }

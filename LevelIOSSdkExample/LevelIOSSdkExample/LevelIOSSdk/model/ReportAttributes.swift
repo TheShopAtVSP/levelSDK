@@ -83,6 +83,7 @@ class ReportAttributes: DataPacket {
     convenience init(bytes: [UInt8]) {
         self.init()
         
+        self.reporter = Int(bytes[2])
         self.indVarDescription = IndependentVariableDescription(rawValue: Int(bytes[3]))
         self.depVarDescription = DependentVariableDescription(rawValue: Int(bytes[5]))
         self.depDataType = DependentDataType(rawValue: Int(bytes[6]))
@@ -96,7 +97,13 @@ class ReportAttributes: DataPacket {
     }
     
     override func getPacket() -> [UInt8] {
-        var bytes: [UInt8] = [UInt8](repeating: UInt8(), count: 11)
+        var bytes: [UInt8]
+        
+        if queryOnly {
+            bytes = [UInt8](repeating: UInt8(), count: 1)
+        } else {
+            bytes = [UInt8](repeating: UInt8(), count: 11)
+        }
         
         var samplesPerRecord: [UInt8] = BitsHelper.convertTo2Bytes(number: self.samplesPerRecord)
         var maxRecords: [UInt8] = BitsHelper.convertTo2Bytes(number: self.maxRecordsPerReport)
