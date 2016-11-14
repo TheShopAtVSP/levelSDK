@@ -822,6 +822,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
             if (deviceStateMachine.getState().getCommand() != null) {
                 executeCommand(deviceStateMachine.getState().getCommand(), deviceStateMachine.getState().getPacket(0));
+                return;
             }
         } else {
             if (deviceStateMachine.getState() == DeviceInteractionState.QueryLock) {
@@ -852,13 +853,13 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                     } else {
                         executeCommand(deviceStateMachine.getState().getCommand(), next);
                     }
-
                 }
 
                 if (deviceStateMachine.getState() == DeviceInteractionState.Done) {
                     Log.v(TAG, "sending out device ready");
                     if (appOpen) {
                         Log.v(TAG, "APP IS OPENS");
+                        setStuffUp();
                         broadcastUpdate(BleDeviceOutput.DeviceReady);
                         deviceReady = true;
                     } else {
@@ -872,6 +873,8 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                         }, 1000);
                     }
                 }
+
+                return;
             }
 
             if (data instanceof CodePacket) {
@@ -942,6 +945,20 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
 
         //EventBus.getDefault().post(new BleDeviceEvent(DeviceEvent.Data, data));
+    }
+
+    private void setStuffUp() {
+        if( deviceStateMachine.isReporter0IsOn() ) {
+            globalReportControl[0] = 1;
+        }
+
+        if( deviceStateMachine.isReporter1IsOn() ) {
+            globalReportControl[1] = 1;
+        }
+
+        if( deviceStateMachine.isReporter2IsOn() ) {
+            globalReportControl[2] = 1;
+        }
     }
 
     private Runnable activeTimeoutRunnable = new Runnable() {

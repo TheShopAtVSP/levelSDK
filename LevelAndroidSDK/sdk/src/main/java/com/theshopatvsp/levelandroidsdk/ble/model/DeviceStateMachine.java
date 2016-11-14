@@ -22,8 +22,9 @@ import  com.theshopatvsp.levelandroidsdk.ble.model.response.TransmitControlData;
 public class DeviceStateMachine {
     private static final String TAG = DeviceStateMachine.class.getSimpleName();
     private DeviceInteractionState state;
-    private boolean reporter0Right = false, reporter1Right = false, reporter0IsOn = false, reporter1IsOn = false;
-    private boolean reporter2Right = false, reporter2IsOn = false;
+    private ReportAttributesData reporter0Config = null, reporter1Config = null, reporter2Config = null;
+    private boolean reporter0IsOn = false, reporter1IsOn = false;
+    private boolean reporter2IsOn = false;
     private int packetsToDownload = 0, currentPacketsDownloaded = 0;
     private boolean timeIsCorrect = false, transmitControlOn = false, needLedCode = false;
     private long timeDiff, deviceTime;
@@ -77,19 +78,19 @@ public class DeviceStateMachine {
             }
         }
 
-        /*if( state == DeviceInteractionState.QueryReporter0 && data != null && data.equals(DeviceInteractionState.SetupReporter0.getPacket(0))) {
+        if( state == DeviceInteractionState.QueryReporter0 && data != null && data instanceof ReportAttributesData) {
             Log.v(TAG, "reporter 0 is right!!!");
-            reporter0Right = true;
+            reporter0Config = (ReportAttributesData)data;
         }
 
-        if( state == DeviceInteractionState.QueryReporter1 && data != null && data.equals(DeviceInteractionState.SetupReporter1.getPacket(0))) {
+        if( state == DeviceInteractionState.QueryReporter1 && data != null && data instanceof ReportAttributesData) {
             Log.v(TAG, "reporter 1 is right!!!");
-            reporter1Right = true;
+            reporter1Config = (ReportAttributesData)data;
         }
 
-        if( state == DeviceInteractionState.QueryReporter2 && data != null && data.equals(DeviceInteractionState.SetupReporter2.getPacket(0))) {
+        if( state == DeviceInteractionState.QueryReporter2 && data != null && data instanceof ReportAttributesData) {
             Log.v(TAG, "reporter 2 is right!!!");
-            reporter2Right = true;
+            reporter2Config = (ReportAttributesData)data;
         }
 
         if (state == DeviceInteractionState.QueryReportControl && data != null) {
@@ -108,7 +109,7 @@ public class DeviceStateMachine {
             }
         }
 
-        if (state == DeviceInteractionState.QueryData && data instanceof TransmitControlData) {
+        /*if (state == DeviceInteractionState.QueryData && data instanceof TransmitControlData) {
             packetsToDownload = ((TransmitControlData)data).getTotalRecordCount();
         }
 
@@ -189,11 +190,11 @@ public class DeviceStateMachine {
             return new Intent(BleDeviceOutput.LedCodeFailed.name());
         }
 
-        reporter0Right = false;
-        reporter1Right = false;
+        reporter0Config = null;
+        reporter1Config = null;
         reporter0IsOn = false;
         reporter1IsOn = false;
-        reporter2Right = false;
+        reporter2Config = null;
         reporter2IsOn = false;
         packetsToDownload = 0;
         currentPacketsDownloaded = 0;
@@ -210,15 +211,6 @@ public class DeviceStateMachine {
 
     public DeviceInteractionState getState() {
         return state;
-    }
-
-    public boolean sendPacket(int reporter) {
-        if ((reporter == 0 && reporter0Right) || (reporter == 1 && reporter1Right) ||
-                (reporter == 2 && reporter2Right)) {
-            return true;
-        }
-
-        return false;
     }
 
     public boolean isTimeIsCorrect() {
@@ -241,12 +233,24 @@ public class DeviceStateMachine {
         return deviceTime;
     }
 
+    public boolean isReporter0IsOn() {
+        return reporter0IsOn;
+    }
+
+    public boolean isReporter1IsOn() {
+        return reporter1IsOn;
+    }
+
+    public boolean isReporter2IsOn() {
+        return reporter2IsOn;
+    }
+
     public void reset() {
-        reporter0Right = false;
-        reporter1Right = false;
+        reporter0Config = null;
+        reporter1Config = null;
         reporter0IsOn = false;
         reporter1IsOn = false;
-        reporter2Right = false;
+        reporter2Config = null;
         reporter2IsOn = false;
         packetsToDownload = 0;
         currentPacketsDownloaded = 0;

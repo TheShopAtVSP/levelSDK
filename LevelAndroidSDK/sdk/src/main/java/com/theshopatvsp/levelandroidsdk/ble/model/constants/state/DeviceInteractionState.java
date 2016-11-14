@@ -143,7 +143,7 @@ public enum DeviceInteractionState implements LevelDeviceEvent {
     SetTime {
         @Override
         public DeviceInteractionState success() {
-            return Done;
+            return QueryReporter0;
         }
 
         @Override
@@ -154,6 +154,90 @@ public enum DeviceInteractionState implements LevelDeviceEvent {
         @Override
         public DeviceCommand getCommand() {
             return DeviceCommand.TIMEWR;
+        }
+
+        @Override
+        public DataPacket getPacket(int reporters) {
+            return null;
+        }
+    },
+    QueryReporter0 {
+        @Override
+        public DeviceInteractionState success() {
+            return QueryReporter1;
+        }
+
+        @Override
+        public DeviceInteractionState uhoh() {
+            return SendLedCode1;
+        }
+
+        @Override
+        public DeviceCommand getCommand() {
+            return DeviceCommand.REPORT_ATTRIBUTES;
+        }
+
+        @Override
+        public DataPacket getPacket(int reporters) {
+            return new ReportAttributesData(0);
+        }
+    },
+    QueryReporter1 {
+        @Override
+        public DeviceInteractionState success() {
+            return QueryReporter2;
+        }
+
+        @Override
+        public DeviceInteractionState uhoh() {
+            return SendLedCode1;
+        }
+
+        @Override
+        public DeviceCommand getCommand() {
+            return DeviceCommand.REPORT_ATTRIBUTES;
+        }
+
+        @Override
+        public DataPacket getPacket(int reporters) {
+            return new ReportAttributesData(1);
+        }
+    },
+    QueryReporter2 {
+        @Override
+        public DeviceInteractionState success() {
+            return QueryReportControl;
+        }
+
+        @Override
+        public DeviceInteractionState uhoh() {
+            return SendLedCode1;
+        }
+
+        @Override
+        public DeviceCommand getCommand() {
+            return DeviceCommand.REPORT_ATTRIBUTES;
+        }
+
+        @Override
+        public DataPacket getPacket(int reporters) {
+            return new ReportAttributesData(2);
+        }
+    },
+    QueryReportControl {
+        @Override
+        public DeviceInteractionState success() {
+            return Done;
+        }
+
+        @Override
+        public DeviceInteractionState uhoh() {
+            return SendLedCode1;
+        }
+
+        @Override
+        public DeviceCommand getCommand() {
+            return DeviceCommand.REPORT_CONTROL;
         }
 
         @Override
