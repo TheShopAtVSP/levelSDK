@@ -129,6 +129,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onDataStreamChanged(int numOfRecords) {
+            Log.v(TAG, "onDataStreamChanged " + numOfRecords);
+        }
+
+        @Override
         public void onDataDeleted() {
             Log.v(TAG, "onDataDeleted");
         }

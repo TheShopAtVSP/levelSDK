@@ -5,6 +5,6 @@ package com.theshopatvsp.levelandroidsdk.ble.model.constants;
  */
 public enum BleDeviceOutput {
     BluetoothNotAvailable, BluetoothNotOn, InputLedCode, LedCodeAccepted, LedCodeFailed, LedCodeNotNeeded, LastUserLocation,
-        BootloaderFinished, Step, BatteryReport, MotionData, BatteryLevel, BatteryState, FirmwareVersion, DeviceReady,
+        BootloaderFinished, Step, BatteryReport, MotionData, BatteryLevel, BatteryState, FirmwareVersion, DeviceReady, TransmitControl,
         LedCodeDone, Disconnected, Frame, BootloaderProgress, BootloaderVersion, Data, ReporterSetupFailed, ReporterSetupSuccess, ReporterChanged, DataNuked, ReporterQueried;
 }

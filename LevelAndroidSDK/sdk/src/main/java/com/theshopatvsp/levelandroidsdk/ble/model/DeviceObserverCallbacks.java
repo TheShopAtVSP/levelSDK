@@ -27,6 +27,7 @@ public interface DeviceObserverCallbacks {
     void onReportersEnabled(Set<ReporterType> activeReporters);
     void onDisconnect();
     void onData(RecordData data);
+    void onDataStreamChanged(int numOfRecords);
     void onDataDeleted();
     void onBatteryLevel(int level);
     void onBatteryState(BatteryState state);

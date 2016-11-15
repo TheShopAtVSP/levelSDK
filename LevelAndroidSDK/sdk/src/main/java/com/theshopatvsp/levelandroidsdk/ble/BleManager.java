@@ -908,12 +908,15 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
                     broadcastUpdate(BleDeviceOutput.ReporterQueried, new ReporterConfig.Builder().attrs(attrs).build());
                 }
-            } else if (data instanceof TransmitControlData && setReporter) {
-                broadcastUpdate(BleDeviceOutput.ReporterSetupSuccess);
-                setReporter = false;
+            } else if (data instanceof TransmitControlData) {
+                broadcastUpdate(BleDeviceOutput.TransmitControl, ((TransmitControlData)data).getTotalRecordCount());
             } else if (data instanceof NukeRecordsPacket) {
                 broadcastUpdate(BleDeviceOutput.DataNuked);
             } else if (data instanceof DataPacket) {
+                if( setReporter ) {
+                    broadcastUpdate(BleDeviceOutput.ReporterSetupSuccess);
+                    setReporter = false;
+                }
                 int reportControl = data.getReportControl();
                 Set<ReporterType> types = new HashSet<>();
 
@@ -1350,6 +1353,13 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                     if (!observers.isEmpty()) {
                         for (DeviceObserverCallbacks callbacks : observers.values()) {
                             callbacks.onSetupFailed((ReporterError)thing);
+                        }
+                    }
+                    break;
+                case TransmitControl:
+                    if (!observers.isEmpty()) {
+                        for (DeviceObserverCallbacks callbacks : observers.values()) {
+                            callbacks.onDataStreamChanged((Integer)thing);
                         }
                     }
                     break;

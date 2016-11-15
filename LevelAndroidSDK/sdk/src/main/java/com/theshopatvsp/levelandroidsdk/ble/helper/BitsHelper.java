@@ -1,7 +1,5 @@
 package com.theshopatvsp.levelandroidsdk.ble.helper;
 
-import android.util.Log;
-
 /**
  * Created by andrco on 10/5/15.
  */
@@ -10,7 +8,7 @@ public class BitsHelper {
 
     public static int convertTo16BitInteger(byte msb, byte lsb) {
         int num = (((int)msb) << 8) | ((int)lsb & 0xFF);
-        Log.v(TAG, "before: " + msb + " " + lsb + " after: " + num);
+        //og.v(TAG, "before: " + msb + " " + lsb + " after: " + num);
         return num;
     }
 

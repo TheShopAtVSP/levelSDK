@@ -74,6 +74,11 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onDataStreamChanged(int numOfRecords) {
+            Log.v(TAG, "onDataStreamChanged " + numOfRecords);
+        }
+
+        @Override
         public void onLedCodeDone() {Log.v(TAG, "onLedCodeDone");}
 
         @Override
