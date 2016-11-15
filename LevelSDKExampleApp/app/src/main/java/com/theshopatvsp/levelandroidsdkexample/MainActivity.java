@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLedCodeDone() {
             Log.v(TAG, "onLedCodeDone");
+            startActivity(new Intent(MainActivity.this, DashboardActivity.class));
         }
 
         @Override
