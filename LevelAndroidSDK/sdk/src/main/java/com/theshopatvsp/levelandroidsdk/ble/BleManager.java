@@ -179,7 +179,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     private static Queue<ClientCommand> clientCommands = new LinkedBlockingQueue<>(100);
     private ReportAttributesData blank = new ReportAttributesData(ReporterType.Steps.getReporter(), IndependentVariableDescription.UNITLESS, 0, DependentVariableDescription.UNITLESS,
             DependentDataType.CHAR, DependentDataScale.ONE_TO_ONE_BIT, 0, 1, 1);
-    private boolean disableSteps = false;
+    private int disableSteps = 0, disableSteps2 = 0;
 
     @Override
     public void onCreate() {
@@ -495,6 +495,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
         notifying = false;
         commandQueue = new LinkedBlockingQueue<>(100);
         waitingCommands = new Stack<>();
+        Log.v(TAG, "setting sentCommand = null");
         sentCommand = null;
         deviceId.reset();
 
@@ -698,7 +699,8 @@ public class BleManager extends Service implements Application.ActivityLifecycle
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.v(TAG, "BLEService.gattCallback.onCharacteristicWrite() *******************************************");
-            if (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX) || ackSent) {
+            if (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX.getUuid()) || ackSent) {
+                Log.v(TAG, "resetting sent command " + (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX)) + " - " + ackSent);
                 sentCommand = null;
 
                 if (ackSent) {
@@ -728,8 +730,10 @@ public class BleManager extends Service implements Application.ActivityLifecycle
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.v(TAG, "BLEService.gattCallback.onCharacteristicChanged() *******************************************");
-            if (characteristic.getUuid().equals(CharacteristicEnum.UART_RX))
+            if (characteristic.getUuid().equals(CharacteristicEnum.UART_RX.getUuid())) {
+                Log.v(TAG, "setting sent command = null");
                 sentCommand = null;
+            }
 
             CharacteristicEnum charac = CharacteristicEnum.getByUuid(characteristic.getUuid());
 
@@ -880,12 +884,14 @@ public class BleManager extends Service implements Application.ActivityLifecycle
             if (data instanceof CodePacket) {
                 broadcastUpdate(BleDeviceOutput.LedCodeAccepted);
             } else if (data instanceof ReportAttributesData) {
-                if (disableSteps) {
-                    disableSteps = false;
+                ReportAttributesData attrs = (ReportAttributesData) data;
+
+                if (disableSteps2 > 0 && attrs.getReporter() == ReporterType.Steps.getReporter()) {
+                    Log.v(TAG, "disabling steps, do not enable");
+                    disableSteps2--;
                     return;
                 }
 
-                ReportAttributesData attrs = (ReportAttributesData) data;
                 ReporterType type = ReporterType.getByReporter(data.getReporter());
 
                 switch (type) {
@@ -901,6 +907,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                 }
 
                 if( !reporterQuery ) {
+                    Log.v(TAG, "enabling reporter = " + convertToNumber(globalReportControl));
                     executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(convertToNumber(globalReportControl)));
                 }
                 else {
@@ -920,7 +927,8 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                 int reportControl = data.getReportControl();
                 Set<ReporterType> types = new HashSet<>();
 
-                if (disableSteps) {
+                if (disableSteps > 0) {
+                    disableSteps--;
                     executeCommand(DeviceCommand.REPORT_ATTRIBUTES, blank);
                 }
 
@@ -1620,7 +1628,8 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                                         if(command.getCommand() == BleClientCommand.EnableReporter) {
                                             globalReportControl[0] = 1;
                                         } else {
-                                            disableSteps = true;
+                                            disableSteps++;
+                                            disableSteps2++;
                                             globalReportControl[0] = 0;
                                         }
                                         break;
