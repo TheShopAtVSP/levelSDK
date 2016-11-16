@@ -925,20 +925,31 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                 }
 
                 for (ReporterType t : ReporterType.values()) {
-                    if ((reportControl & t.getReportControlBit()) > 0) {
-                        types.add(t);
-
-                        switch (t) {
-                            case Steps:
+                    switch (t) {
+                        case Steps:
+                            if ((reportControl & t.getReportControlBit()) > 0) {
+                                types.add(t);
                                 globalReportControl[0] = 1;
-                                break;
-                            case Accel:
+                            } else {
+                                globalReportControl[0] = 0;
+                            }
+                            break;
+                        case Accel:
+                            if ((reportControl & t.getReportControlBit()) > 0) {
+                                types.add(t);
                                 globalReportControl[2] = 1;
-                                break;
-                            case Gyro:
+                            } else {
+                                globalReportControl[2] = 0;
+                            }
+                            break;
+                        case Gyro:
+                            if ((reportControl & t.getReportControlBit()) > 0) {
+                                types.add(t);
                                 globalReportControl[1] = 1;
-                                break;
-                        }
+                            } else {
+                                globalReportControl[1] = 0;
+                            }
+                            break;
                     }
                 }
 
