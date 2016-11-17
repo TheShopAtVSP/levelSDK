@@ -30,7 +30,7 @@ public class RecordData extends TimePacket {
     //used to start a record
     public RecordData(byte packet[]) {
         super();
-        id = BitsHelper.convertTo16BitInteger(packet[2], packet[3]);
+        id = BitsHelper.convertTo16BitInteger(packet[3], packet[2]);
         totalBytes = BitsHelper.convertTo12BitInteger(packet[5], packet[4]) - HEADER_LEGTH; //subtract the header length
         reporter = (packet[5] & 0xF0) >> 4;
         type = ReporterType.getByReporter(reporter);
