@@ -1882,7 +1882,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     }
 
     private void disconnectAndSetAlarm() {
-        disconnectFromDevice();
+        //disconnectFromDevice();
         stopCommandThread();
         //AlarmHelper.setAlarm(getApplicationContext());
     }
