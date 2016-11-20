@@ -21,6 +21,7 @@ import com.theshopatvsp.levelandroidsdk.ble.model.constants.reporter.DataFields;
 import com.theshopatvsp.levelandroidsdk.ble.model.constants.reporter.DependentDataScale;
 import com.theshopatvsp.levelandroidsdk.ble.model.response.RecordData;
 
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -64,8 +65,21 @@ public class DashboardActivity extends AppCompatActivity {
         public void onDisconnect() {Log.v(TAG, "onDisconnect");}
 
         @Override
-        public void onData(RecordData data) {
-            Log.v(TAG, "onData");
+        public void onData(final RecordData data) {
+
+            try {
+                Log.v(TAG, "data.getData() [" + data.getData().length + "]" + Arrays.toString(data.getData()));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((TextView)findViewById(R.id.data_view)).setText(Arrays.toString(data.getData()));
+                    }
+                });
+            }
+            catch(Exception e)
+            {
+                Log.v(TAG, "EXCEPTION on data.getData()" + e.getMessage());
+            }
         }
 
         @Override
