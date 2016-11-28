@@ -45,7 +45,7 @@ public class RecordData extends TimePacket {
             data = new int[totalBytes / 2];
 
             for( int i = HEADER_LEGTH + 2; i < packet.length; i+=2 ) {
-                data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i], packet[i + 1]);
+                data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i+1], packet[i]);
 
                 if (isFinished()) {
                     break;
@@ -56,7 +56,7 @@ public class RecordData extends TimePacket {
 
     public RecordData continueRecord(byte packet[]) {
         for (int i = 2; i < packet.length; i+=2) {
-            data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i], packet[i + 1]);;
+            data[currentBytes++] = BitsHelper.convertTo16BitInteger(packet[i+1], packet[i]);;
 
             if (isFinished()) {
                 break;
