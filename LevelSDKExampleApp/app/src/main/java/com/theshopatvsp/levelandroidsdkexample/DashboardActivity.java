@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.theshopatvsp.levelandroidsdk.ble.model.DeviceClient;
+import com.theshopatvsp.levelandroidsdk.ble.model.DeviceConfig;
 import com.theshopatvsp.levelandroidsdk.ble.model.DeviceObserverCallbacks;
 import com.theshopatvsp.levelandroidsdk.ble.model.ReporterConfig;
 import com.theshopatvsp.levelandroidsdk.ble.model.constants.BatteryState;
@@ -21,6 +22,7 @@ import com.theshopatvsp.levelandroidsdk.ble.model.constants.reporter.DataFields;
 import com.theshopatvsp.levelandroidsdk.ble.model.constants.reporter.DependentDataScale;
 import com.theshopatvsp.levelandroidsdk.ble.model.response.RecordData;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Set;
 public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = DashboardActivity.class.getSimpleName();
     private DeviceClient deviceClient;
+    private DeviceConfig.Builder config;
     private DeviceObserverCallbacks callbacks = new DeviceObserverCallbacks() {
         @Override
         public void onBluetoothNotAvailable() {
@@ -167,7 +170,7 @@ public class DashboardActivity extends AppCompatActivity {
     private EditText samplesPerRecord;
     private EditText maxRecords;
     private Button setUp;
-    private Button doIt, enableData, nukeData;
+    private Button doIt, enableData, nukeData, sendConfig;
     private TextView dataText, batteryLevel, batteryState;
     private boolean dataOn = false;
 
@@ -177,6 +180,7 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         deviceClient = new DeviceClient();
+        config = new DeviceConfig.Builder();
 
         reporterSpinner = (Spinner) findViewById(R.id.reporterTypeSpinner);
         ArrayAdapter<CharSequence> reporterAdapter = ArrayAdapter.createFromResource(this, R.array.reporter_types, android.R.layout.simple_spinner_item);
@@ -217,6 +221,16 @@ public class DashboardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 sendReporterData();
+            }
+        });
+
+        sendConfig = (Button) findViewById(R.id.sendConfig);
+
+        sendConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deviceClient.setUpDevice(config.build());
+                config = new DeviceConfig.Builder();
             }
         });
 
@@ -274,46 +288,42 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void sendReporterData() {
-        ReporterConfig.Builder configBuilder = new ReporterConfig.Builder();
         String reporterType = (String) reporterSpinner.getSelectedItem();
-
-
-        if( "Steps".equalsIgnoreCase(reporterType) ) {
-            configBuilder = configBuilder.step();
-        } else if ("Accel".equalsIgnoreCase(reporterType)) {
-            configBuilder = configBuilder.accel();
-        } else {
-            configBuilder = configBuilder.gyro();
-        }
-
 
         int samplingFrequency = Integer.valueOf((sampleFrequency.getText() == null) ? "0" : sampleFrequency.getText().toString());
         DependentDataScale scale = DependentDataScale.getById(dataScaleSpinner.getSelectedItemPosition());
         int samplesPerRec = Integer.valueOf((samplesPerRecord.getText() == null) ? "0" : samplesPerRecord.getText().toString());
         int maxRecs = Integer.valueOf((maxRecords.getText() == null) ? "0" : maxRecords.getText().toString());
 
-        configBuilder = configBuilder.samplingFrequency(samplingFrequency)
-                .dependentDataScale(scale)
-                .samplesPerRecord(samplesPerRec)
-                .maxRecordsPerReport(maxRecs);
+        Set<DataFields> dataFields = new HashSet<>();
 
         if (xaxis.isChecked()) {
-            configBuilder = configBuilder.includeXAxis();
+            dataFields.add(DataFields.INCLUDE_X_AXIS);
         }
 
         if (yaxis.isChecked()) {
-            configBuilder = configBuilder.includeYAxis();
+            dataFields.add(DataFields.INCLUDE_Y_AXIS);
         }
 
         if (zaxis.isChecked()) {
-            configBuilder = configBuilder.includeZAxis();
+            dataFields.add(DataFields.INCLUDE_Z_AXIS);
         }
 
         if (magnitude.isChecked()) {
-            configBuilder = configBuilder.includeMagnitude();
+            dataFields.add(DataFields.INCLUDE_MAGNITUDE);
         }
 
-        deviceClient.setUpReporter(configBuilder.build());
+        if( "Steps".equalsIgnoreCase(reporterType) ) {
+            config = config.setUpStepReporter(samplingFrequency, scale, samplesPerRec, maxRecs)
+                .enableReporter(ReporterType.Steps);
+        } else if ("Accel".equalsIgnoreCase(reporterType)) {
+            config = config.setUpAccelReporter(samplingFrequency, scale, dataFields, samplesPerRec, maxRecs)
+                .enableReporter(ReporterType.Accel);
+        } else {
+            config = config.setUpGryoReporter(samplingFrequency, scale, dataFields, samplesPerRec, maxRecs)
+                .enableReporter(ReporterType.Gyro);
+        }
+        //deviceClient.setUpReporter(configBuilder.build());
     }
 
     @Override

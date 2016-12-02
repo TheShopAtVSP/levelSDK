@@ -9,6 +9,7 @@ import com.theshopatvsp.levelandroidsdk.ble.model.response.ReportAttributesData;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by andrco on 9/25/16.
@@ -131,6 +132,12 @@ public class ReporterConfig implements Serializable {
             this.dataFields.add(DataFields.INCLUDE_X_AXIS);
             this.dataFields.add(DataFields.INCLUDE_Y_AXIS);
             this.dataFields.add(DataFields.INCLUDE_Z_AXIS);
+
+            return this;
+        }
+
+        public Builder dataFields(Set<DataFields> dataFields) {
+            this.dataFields.addAll(dataFields);
 
             return this;
         }

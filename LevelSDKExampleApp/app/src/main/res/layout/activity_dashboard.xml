@@ -115,10 +115,15 @@
                 android:inputType="number" />
         </LinearLayout>
         <Button
-        android:id="@+id/setUpReporter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set Up Reporter" />
+            android:id="@+id/setUpReporter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Up Reporter" />
+        <Button
+            android:id="@+id/sendConfig"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send Config" />
 
         <Button
             android:id="@+id/queryReportControl"

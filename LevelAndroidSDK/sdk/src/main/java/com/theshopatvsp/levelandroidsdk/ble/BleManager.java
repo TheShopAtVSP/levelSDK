@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -43,6 +44,7 @@ import com.theshopatvsp.levelandroidsdk.ble.model.AccelFilt;
 import com.theshopatvsp.levelandroidsdk.ble.model.BatteryReport;
 import com.theshopatvsp.levelandroidsdk.ble.model.BleDeviceRecord;
 import com.theshopatvsp.levelandroidsdk.ble.model.ClientCommand;
+import com.theshopatvsp.levelandroidsdk.ble.model.DeviceConfig;
 import com.theshopatvsp.levelandroidsdk.ble.model.DeviceIdManager;
 import com.theshopatvsp.levelandroidsdk.ble.model.DeviceObserverCallbacks;
 import com.theshopatvsp.levelandroidsdk.ble.model.DeviceStateMachine;
@@ -179,7 +181,9 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     private static Queue<ClientCommand> clientCommands = new LinkedBlockingQueue<>(100);
     private ReportAttributesData blank = new ReportAttributesData(ReporterType.Steps.getReporter(), IndependentVariableDescription.UNITLESS, 0, DependentVariableDescription.UNITLESS,
             DependentDataType.CHAR, DependentDataScale.ONE_TO_ONE_BIT, 0, 1, 1);
-    private int disableSteps = 0, disableSteps2 = 0;
+    private int disableSteps = 0, disableSteps2 = 0, setUpReporters = 0, setReporterControlTo = -1;
+    private static boolean locked = false;
+    private static List<ClientCommand> lockedQueue = new ArrayList<>();
 
     @Override
     public void onCreate() {
@@ -284,7 +288,11 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     public static void addClientCommand(ClientCommand command) {
         if( appOpen ) {
             Log.v(TAG, "adding client command: " + command.getCommand());
-            clientCommands.add(command);
+            if( locked ) {
+                lockedQueue.add(command);
+            } else {
+                clientCommands.add(command);
+            }
         }
     }
 
@@ -892,28 +900,24 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                     return;
                 }
 
-                ReporterType type = ReporterType.getByReporter(data.getReporter());
-
-                switch (type) {
-                    case Steps:
-                        globalReportControl[0] = 1;
-                        break;
-                    case Accel:
-                        globalReportControl[2] = 1;
-                        break;
-                    case Gyro:
-                        globalReportControl[1] = 1;
-                        break;
+                if( setUpReporters > 0 ) {
+                    setUpReporters--;
                 }
 
-                if( !reporterQuery ) {
-                    Log.v(TAG, "enabling reporter = " + convertToNumber(globalReportControl));
-                    executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(convertToNumber(globalReportControl)));
-                }
-                else {
+                if( reporterQuery ) {
                     reporterQuery = false;
 
                     broadcastUpdate(BleDeviceOutput.ReporterQueried, new ReporterConfig.Builder().attrs(attrs).build());
+                }
+                else if(setUpReporters == 0 ) {
+                    //do it here
+                    locked = false;
+                    executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(setReporterControlTo));
+
+                    if (!lockedQueue.isEmpty()) {
+                        clientCommands.addAll(lockedQueue);
+                        lockedQueue = new ArrayList<>();
+                    }
                 }
             } else if (data instanceof TransmitControlData) {
                 broadcastUpdate(BleDeviceOutput.TransmitControl, ((TransmitControlData)data).getTotalRecordCount());
@@ -1088,6 +1092,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
     private void sendAck() {
         Log.v(TAG, "sending ACK for record");
+        ackSent = true;
         byte[] packet = {
                 (byte) deviceId.getPacketIdOut(),
                 (byte) DeviceCommand.ACK.getCommand(),
@@ -1611,14 +1616,45 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                                 executeCommand(DeviceCommand.REPORT_CONTROL, null);
                                 break;
                             case SetUpReporter:
-                                ReporterConfig config = (ReporterConfig) command.getThing();
+                                locked = true;
+                                DeviceConfig config = (DeviceConfig) command.getThing();
+
+                                if( config.getDisable().contains(ReporterType.Steps) ) {
+                                    disableSteps++;
+                                    disableSteps2++;
+                                }
+
+                                setGlobalReportControl(false, config.getDisable());
+                                executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(convertToNumber(globalReportControl)));
+
+                                if( disableSteps > 0 ) {
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        //ignore stupid
+                                    }
+                                }
+
+                                for (ReporterConfig conf : config.getReporterConfigs()) {
+                                    ReportAttributesData data = new ReportAttributesData(conf.getType().getReporter(), conf.getIndVarDesc(), conf.getSamplingHz(),
+                                            conf.getType().getDepVarDesc(), DependentDataType.INT16, conf.getDependentDataScale(), conf.getDataFields(),
+                                            conf.getSamplesPerRecord(), conf.getMaxNumberOfRecords());
+
+                                    executeCommand(DeviceCommand.REPORT_ATTRIBUTES, data);
+                                    setUpReporters++;
+                                }
+
+                                setGlobalReportControl(true, config.getEnable());
+                                setReporterControlTo = convertToNumber(globalReportControl);
+
+                                /*ReporterConfig config = (ReporterConfig) command.getThing();
                                 ReportAttributesData data = new ReportAttributesData(config.getType().getReporter(), config.getIndVarDesc(), config.getSamplingHz(),
                                         config.getType().getDepVarDesc(), DependentDataType.INT16, config.getDependentDataScale(), config.getDataFields(),
                                         config.getSamplesPerRecord(), config.getMaxNumberOfRecords());
 
                                 //TODO enable reporter!!!
                                 setReporter = true;
-                                executeCommand(DeviceCommand.REPORT_ATTRIBUTES, data);
+                                executeCommand(DeviceCommand.REPORT_ATTRIBUTES, data);*/
                                 break;
                             case DisableReporter:
                             case EnableReporter:
@@ -1671,6 +1707,12 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                     Log.w(TAG, "CommandThread.run(): " + ie.getMessage());
                 }
             }
+        }
+    }
+
+    private void setGlobalReportControl(boolean enable, Set<ReporterType> reporters) {
+        for (ReporterType type : reporters) {
+            globalReportControl[type.getReporter()] = (enable ? 1 : 0);
         }
     }
 
