@@ -170,7 +170,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
     private DeviceIdManager deviceId;
     private Queue<LevelCommand> commandQueue = new LinkedBlockingQueue<>(100);
     private LevelCommand sentCommand;
-    private boolean ackSent = false;
+    private int ackSent = 0;
     private boolean runCommandThread = false;
     private DeviceStateMachine deviceStateMachine;
     private boolean userIsActive = false;
@@ -706,13 +706,14 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.v(TAG, "BLEService.gattCallback.onCharacteristicWrite() *******************************************");
-            if (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX.getUuid()) || ackSent) {
+            Log.v(TAG, "BLEService.gattCallback.onCharacteristicWrite() ******************************************* ackSent = " + ackSent);
+            if (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX.getUuid()) || ackSent > 0) {
                 Log.v(TAG, "resetting sent command " + (!characteristic.getUuid().equals(CharacteristicEnum.UART_TX)) + " - " + ackSent);
+
                 sentCommand = null;
 
-                if (ackSent) {
-                    ackSent = false;
+                if (ackSent > 0) {
+                    ackSent--;
                 }
             }
 
@@ -1102,7 +1103,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
     private void sendAck() {
         Log.v(TAG, "sending ACK for record");
-        ackSent = true;
+        ackSent++;
         byte[] packet = {
                 (byte) deviceId.getPacketIdOut(),
                 (byte) DeviceCommand.ACK.getCommand(),
