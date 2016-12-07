@@ -287,7 +287,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
     public static void addClientCommand(ClientCommand command) {
         if( appOpen ) {
-            Log.v(TAG, "adding client command: " + command.getCommand());
+            Log.v(TAG, "adding client command: " + command.getCommand() + " locked = " + locked);
             if( locked ) {
                 lockedQueue.add(command);
             } else {
@@ -738,7 +738,9 @@ public class BleManager extends Service implements Application.ActivityLifecycle
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.v(TAG, "BLEService.gattCallback.onCharacteristicChanged() *******************************************");
-            if (characteristic.getUuid().equals(CharacteristicEnum.UART_RX.getUuid())) {
+            byte packet[] = characteristic.getValue();
+
+            if (characteristic.getUuid().equals(CharacteristicEnum.UART_RX.getUuid()) && packet != null && packet.length > 1 && packet[1] != 5 && packet[1] != 6) {
                 Log.v(TAG, "setting sent command = null");
                 sentCommand = null;
             }
@@ -808,6 +810,8 @@ public class BleManager extends Service implements Application.ActivityLifecycle
             }
 
             broadcastUpdate(BleDeviceOutput.ReporterSetupFailed, error);
+            locked = false;
+            commandQueue.clear();
             return;
         } catch (Exception e) {
             //disconnectFromDevice(false);
@@ -911,8 +915,14 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                 }
                 else if(setUpReporters == 0 ) {
                     //do it here
+                    Log.v(TAG, "SETUP: reporters set up is there something to do? " + setReporterControlTo);
                     locked = false;
-                    executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(setReporterControlTo));
+
+                    if (setReporterControlTo >= 0) {
+                        executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(setReporterControlTo));
+                    }
+
+                    setReporterControlTo = -1;
 
                     if (!lockedQueue.isEmpty()) {
                         clientCommands.addAll(lockedQueue);
@@ -1625,6 +1635,7 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                                 }
 
                                 setGlobalReportControl(false, config.getDisable());
+                                Log.v(TAG, "SETUP: disabling reporters: " + convertToNumber(globalReportControl));
                                 executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(convertToNumber(globalReportControl)));
 
                                 if( disableSteps > 0 ) {
@@ -1635,17 +1646,40 @@ public class BleManager extends Service implements Application.ActivityLifecycle
                                     }
                                 }
 
-                                for (ReporterConfig conf : config.getReporterConfigs()) {
-                                    ReportAttributesData data = new ReportAttributesData(conf.getType().getReporter(), conf.getIndVarDesc(), conf.getSamplingHz(),
-                                            conf.getType().getDepVarDesc(), DependentDataType.INT16, conf.getDependentDataScale(), conf.getDataFields(),
-                                            conf.getSamplesPerRecord(), conf.getMaxNumberOfRecords());
+                                if( config.getReporterConfigs() != null && !config.getReporterConfigs().isEmpty()) {
+                                    for (ReporterConfig conf : config.getReporterConfigs()) {
+                                        Log.v(TAG, "SETUP: config'ing reporter " + conf.getType());
+                                        ReportAttributesData data = new ReportAttributesData(conf.getType().getReporter(), conf.getIndVarDesc(), conf.getSamplingHz(),
+                                                conf.getType().getDepVarDesc(), DependentDataType.INT16, conf.getDependentDataScale(), conf.getDataFields(),
+                                                conf.getSamplesPerRecord(), conf.getMaxNumberOfRecords());
 
-                                    executeCommand(DeviceCommand.REPORT_ATTRIBUTES, data);
-                                    setUpReporters++;
+                                        executeCommand(DeviceCommand.REPORT_ATTRIBUTES, data);
+                                        setUpReporters++;
+                                    }
                                 }
 
-                                setGlobalReportControl(true, config.getEnable());
-                                setReporterControlTo = convertToNumber(globalReportControl);
+                                if( config.getEnable() != null && !config.getEnable().isEmpty() ) {
+                                    setGlobalReportControl(true, config.getEnable());
+                                    setReporterControlTo = convertToNumber(globalReportControl);
+                                    Log.v(TAG, "SETUP: enabling reporters LATER: " + setReporterControlTo);
+                                } else {
+                                    setReporterControlTo = -1;
+                                }
+
+                                if(config.getReporterConfigs() == null || config.getReporterConfigs().isEmpty()) {
+                                    Log.v(TAG, "SETUP: nothing to config enabling reporter now!");
+
+                                    if( setReporterControlTo >= 0 )
+                                        executeCommand(DeviceCommand.REPORT_CONTROL, new DataPacket(setReporterControlTo));
+
+                                    locked = false;
+
+                                    if (!lockedQueue.isEmpty()) {
+                                        Log.v(TAG, "SETUP: commands backed up sending!!");
+                                        clientCommands.addAll(lockedQueue);
+                                        lockedQueue = new ArrayList<>();
+                                    }
+                                }
 
                                 /*ReporterConfig config = (ReporterConfig) command.getThing();
                                 ReportAttributesData data = new ReportAttributesData(config.getType().getReporter(), config.getIndVarDesc(), config.getSamplingHz(),
