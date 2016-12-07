@@ -821,7 +821,10 @@ public class BleManager extends Service implements Application.ActivityLifecycle
 
         if (data instanceof RecordData) {
             Log.v(TAG, data.toString());
-            sendAck();
+
+            if( ((RecordData)data).getType() == ReporterType.Steps ){
+                sendAck();
+            }
 
             //deviceStateMachine.incPacketToDownload();
 
